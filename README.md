@@ -1,4 +1,7 @@
 # wordle-scala
+
+![CI Build](https://github.com/tcooling/wordle-scala/actions/workflows/scala.yml/badge.svg)
+
 A command line Wordle clone using Scala.
 
 ### Table of Contents
