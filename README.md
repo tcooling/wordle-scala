@@ -31,11 +31,16 @@ To run all the tests, run the below command:
 sbt:wordle-scala> test
 ```
 
+The branch build runs the following command:
+
+```shell
+sbt:wordle-scala> prBuild
+```
+
+Which runs `scalafix` and `scalafmt` before running all the tests.
+
 ## TODO
-- Add details of scalafix and scalafmt
-- CI
 - look into Cats effect
-- Refactor game logic to make more testable
 
 ## License
 

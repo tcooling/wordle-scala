@@ -15,9 +15,7 @@ object Main extends App {
   private val config = WordleConfig(
     filename = filename,
     wordLength = wordLength,
-    numberOfGuesses = numberOfGuesses,
-    startSeparator = '[',
-    endSeparator = ']'
+    numberOfGuesses = numberOfGuesses
   )
 
   new Wordle(config, WordsReader, RandomWord.chooseRandomWord, UserInputGuessConnector).startGame()
