@@ -1,39 +1,40 @@
 package com.tcooling.wordle.game
 
-import com.tcooling.wordle.model.{WordGuess, WordleConfig}
+import cats.implicits.toShow
+import com.tcooling.wordle.model.LetterGuess.showLetterGuess
+import com.tcooling.wordle.model.WordGuess
 
 import scala.annotation.tailrec
 
 object GameBoard {
 
+  private val startSeparator: Char = '['
+  private val endSeparator:   Char = ']'
+
   /**
    * Generate the game board and put each user guess on the board in the correct colour
    */
-  def generateGameBoard(config: WordleConfig, previousGuesses: List[WordGuess]): List[String] = {
-    val row = List.fill(config.wordLength)(config.startSeparator + " " + config.endSeparator)
+  def generateGameBoard(wordLength: Int, numberOfGuesses: Int, previousGuesses: List[WordGuess]): List[String] = {
+    val emptyRow = List.fill(wordLength)(startSeparator + " " + endSeparator)
 
     @tailrec
     def loop(previousGuesses: List[WordGuess], numberOfGuesses: Int, gameBoard: List[String]): List[String] =
       if (numberOfGuesses == 0) gameBoard
       else
         previousGuesses match {
-          case head :: tail => loop(tail, numberOfGuesses - 1, gameBoard :+ generateBoardRow(config, head))
-          case Nil          => loop(Nil, numberOfGuesses - 1, gameBoard :+ row.mkString)
+          case head :: tail => loop(tail, numberOfGuesses - 1, gameBoard :+ generateBoardRow(head))
+          case Nil          => loop(Nil, numberOfGuesses - 1, gameBoard :+ emptyRow.mkString)
         }
 
-    loop(previousGuesses, config.numberOfGuesses, gameBoard = Nil)
+    loop(previousGuesses, numberOfGuesses, gameBoard = Nil)
   }
 
   /**
    * Given the [[WordGuess]], create the string to be printed. The only character that is displayed using a console
-   * colour is the letter guess itself, which is between a start and end separator. The console needs to be reset to
-   * prevent subsequent characters using the previously used colour.
+   * colour is the letter guess itself, which is between a start and end separator.
    */
-  def generateBoardRow(config: WordleConfig, wordGuess: WordGuess): String =
-    wordGuess.letterGuesses.map { lg =>
-      config.startSeparator + lg.consoleColour + lg.letter + Console.RESET + config.endSeparator
-    }.mkString
-
-  def printGameBoard(gameBoardRows: List[String]): Unit = println(gameBoardRows.mkString("\n"))
+  def generateBoardRow(wordGuess: WordGuess): String = wordGuess.letterGuesses.map { letterGuess =>
+    startSeparator + letterGuess.show + endSeparator
+  }.mkString
 
 }

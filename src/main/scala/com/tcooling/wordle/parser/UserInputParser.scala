@@ -1,9 +1,8 @@
-package com.tcooling.wordle.input
+package com.tcooling.wordle.parser
 
 import cats.data.NonEmptySet
 import com.tcooling.wordle.model.UserInputError
 import com.tcooling.wordle.model.UserInputError.{IncorrectLength, NonLetterCharacter, WordDoesNotExist}
-import com.tcooling.wordle.parser.WordRegex
 
 object UserInputParser {
 
