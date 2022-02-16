@@ -19,6 +19,9 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
   private val chooseRandomWordF: NonEmptySet[String] => String = _ => targetWord
   private val guessConnector:    GuessInputConnector           = mock[GuessInputConnector]
 
+  private def createGuessConnector(allWords: NonEmptySet[String], config: WordleConfig): GuessInputConnector =
+    guessConnector
+
   "Wordle" should {
     "handle a player winning the game" when {
       "in all possible numbers of guesses" in {
@@ -31,7 +34,7 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
           List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", targetWord)
         ).foreach { userInputGuesses =>
           withClue(s"for guesses $userInputGuesses") {
-            val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+            val wordle = new Wordle(config, fileReader, chooseRandomWordF, createGuessConnector)
             mockUserInputGuesses(userInputGuesses)
             wordle.startGame()
           }
@@ -41,13 +44,13 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
 
     "handle a player losing the game" when {
       "each guess is valid" in {
-        val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+        val wordle = new Wordle(config, fileReader, chooseRandomWordF, createGuessConnector)
         mockUserInputGuesses(List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN"))
         wordle.startGame()
       }
 
       "some guesses are the wrong number of letters, include special characters or are not valid words" in {
-        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, createGuessConnector)
         val specialCharacterGuesses = List("&&&&&", "+++++", "%%%%%")
         val nonLetterGuesses        = List("12345", "ABC12")
         val wrongLengthGuesses      = List("", "ABC", "TESTING")

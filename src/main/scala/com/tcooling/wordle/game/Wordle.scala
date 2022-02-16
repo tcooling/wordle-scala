@@ -14,7 +14,7 @@ final class Wordle(
   config:         WordleConfig,
   fileReader:     FileReader,
   randomWord:     NonEmptySet[String] => String,
-  guessConnector: GuessInputConnector
+  guessConnector: (NonEmptySet[String], WordleConfig) => GuessInputConnector
 ) {
 
   def startGame(): Unit =
@@ -23,7 +23,7 @@ final class Wordle(
       case Right(allWords) =>
         println(s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength}")
         val targetWord = randomWord(allWords)
-        gameLoop(config, targetWord, allWords, guessConnector)
+        gameLoop(config, targetWord, allWords, guessConnector(allWords, config))
     }
 
   private def gameLoop(

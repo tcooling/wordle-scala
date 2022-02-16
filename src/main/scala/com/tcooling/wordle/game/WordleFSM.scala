@@ -64,7 +64,7 @@ object WordleFSM {
     guesses:        List[WordGuess]
   ): State = {
     println("Guess: ")
-    val guess = guessConnector.getUserInput()
+    val guess = guessConnector.getUserInput(guesses)
     val updatedGuesses = UserInputParser.parseGuess(allWords, guess, wordLength) match {
       case Left(err) =>
         println(err.show + "\nPlease try again.")

@@ -3,7 +3,18 @@ package com.tcooling.wordle.model
 import cats.Show
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
 
-final case class WordGuess(letterGuesses: List[LetterGuess])
+import scala.collection.breakOut
+
+final case class WordGuess(letterGuesses: List[LetterGuess]) {
+  def lettersInCorrectPosition: Map[Char, Int] =
+    letterGuesses.zipWithIndex.collect { case (x: CorrectGuess, index) => x.letter -> index }(breakOut)
+
+  def lettersInWrongPosition: Map[Char, Int] =
+    letterGuesses.zipWithIndex.collect { case (x: WrongPositionGuess, index) => x.letter -> index }(breakOut)
+
+  def lettersNotPresent: Set[Char] =
+    letterGuesses.collect { case x: IncorrectGuess => x.letter }.toSet
+}
 
 object WordGuess {
   implicit val showWordGuess: Show[WordGuess] = Show.show(_.letterGuesses.map(_.letter).mkString)
