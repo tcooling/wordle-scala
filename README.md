@@ -41,6 +41,7 @@ Which runs `scalafix` and `scalafmt` before running all the tests.
 
 ## TODO
 - look into Cats effect
+- hard mode
 
 ## License
 

@@ -1,7 +1,8 @@
 package com.tcooling.wordle
 
+import cats.data.NonEmptySet
 import com.tcooling.wordle.game.Wordle
-import com.tcooling.wordle.input.UserInputGuessConnector
+import com.tcooling.wordle.input.{ComputerInputGuessConnector, GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.WordleConfig
 import com.tcooling.wordle.parser.WordsReader
 import com.tcooling.wordle.util.RandomWord
@@ -15,9 +16,17 @@ object Main extends App {
   private val config = WordleConfig(
     filename = filename,
     wordLength = wordLength,
-    numberOfGuesses = numberOfGuesses
+    numberOfGuesses = numberOfGuesses,
+    useComputerGuessConnector = false
   )
 
-  new Wordle(config, WordsReader, RandomWord.chooseRandomWord, UserInputGuessConnector).startGame()
+  new Wordle(config, WordsReader, RandomWord.chooseRandomWord, createGuessInputConnector).startGame()
+
+  private def createGuessInputConnector(allWords: NonEmptySet[String], config: WordleConfig): GuessInputConnector =
+    if (config.useComputerGuessConnector) {
+      new ComputerInputGuessConnector(allWords, config)
+    } else {
+      UserInputGuessConnector
+    }
 
 }

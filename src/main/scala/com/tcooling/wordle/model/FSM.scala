@@ -14,5 +14,5 @@ object FSM {
   final case object UserInputGuess extends FSM
   final case object Win extends FSM
   final case object Lose extends FSM
-  final case object Exit extends FSM
+  final case object Exit extends FSM // TODO: could make this a case class, return stats on how well the user did
 }

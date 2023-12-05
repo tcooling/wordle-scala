@@ -13,7 +13,8 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
   private val config: WordleConfig = WordleConfig(
     filename = "words.txt",
     wordLength = 5,
-    numberOfGuesses = 6
+    numberOfGuesses = 6,
+    useComputerGuessConnector = false
   )
   private val fileReader:        FileReader                    = WordsReader
   private val chooseRandomWordF: NonEmptySet[String] => String = _ => targetWord
@@ -31,7 +32,7 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
           List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", targetWord)
         ).foreach { userInputGuesses =>
           withClue(s"for guesses $userInputGuesses") {
-            val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+            val wordle = new Wordle(config, fileReader, chooseRandomWordF, (_, _) => guessConnector)
             mockUserInputGuesses(userInputGuesses)
             wordle.startGame()
           }
@@ -41,13 +42,13 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
 
     "handle a player losing the game" when {
       "each guess is valid" in {
-        val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+        val wordle = new Wordle(config, fileReader, chooseRandomWordF, (_, _) => guessConnector)
         mockUserInputGuesses(List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN"))
         wordle.startGame()
       }
 
       "some guesses are the wrong number of letters, include special characters or are not valid words" in {
-        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
+        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, (_, _) => guessConnector)
         val specialCharacterGuesses = List("&&&&&", "+++++", "%%%%%")
         val nonLetterGuesses        = List("12345", "ABC12")
         val wrongLengthGuesses      = List("", "ABC", "TESTING")
@@ -61,6 +62,6 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
   }
 
   private def mockUserInputGuesses(guesses: List[String]): Unit =
-    guesses.foreach((guessConnector.getUserInput _).expects().returns(_))
+    guesses.foreach((guessConnector.getUserInput _).expects(*).returns(_))
 
 }

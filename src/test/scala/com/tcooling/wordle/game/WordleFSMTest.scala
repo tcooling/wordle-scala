@@ -12,7 +12,8 @@ final class WordleFSMTest extends WordSpecLike with Matchers with MockFactory {
   private val wordleConfig: WordleConfig = WordleConfig(
     filename = "words.txt",
     wordLength = 5,
-    numberOfGuesses = 6
+    numberOfGuesses = 6,
+    useComputerGuessConnector = false
   )
 
   private val word1:          String              = "HELLO"
@@ -74,18 +75,19 @@ final class WordleFSMTest extends WordSpecLike with Matchers with MockFactory {
       "UserInputGuess" when {
         "a valid guess is input" when {
           "the guess is in lowercase" in {
-            (guessConnector.getUserInput _).expects().returns(word1.toLowerCase)
+            (guessConnector.getUserInput _).expects(Nil).returns(word1.toLowerCase)
             nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, List(word1).map(wordGuessF))
           }
 
           "the guess is in uppercase" in {
-            (guessConnector.getUserInput _).expects().returns(word1)
+            (guessConnector.getUserInput _).expects(Nil).returns(word1)
             nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, List(word1).map(wordGuessF))
           }
 
           "when the guess has already been input previously" in {
-            (guessConnector.getUserInput _).expects().returns(word1)
-            nextStateF(UserInputGuess, List(word1).map(wordGuessF)) shouldBe
+            val wordGuessList = List(word1).map(wordGuessF)
+            (guessConnector.getUserInput _).expects(wordGuessList).returns(word1)
+            nextStateF(UserInputGuess, wordGuessList) shouldBe
               (PrintGameBoard, List(word1, word1).map(wordGuessF))
           }
         }
@@ -93,35 +95,35 @@ final class WordleFSMTest extends WordSpecLike with Matchers with MockFactory {
         "an invalid guess is input" when {
           "the guess is the wrong length" when {
             "empty" in {
-              (guessConnector.getUserInput _).expects().returns("")
+              (guessConnector.getUserInput _).expects(Nil).returns("")
               nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
             }
 
             "too short" in {
-              (guessConnector.getUserInput _).expects().returns(word1.tail)
+              (guessConnector.getUserInput _).expects(Nil).returns(word1.tail)
               nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
             }
 
             "too long" in {
-              (guessConnector.getUserInput _).expects().returns(word1 + "Q")
+              (guessConnector.getUserInput _).expects(Nil).returns(word1 + "Q")
               nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
             }
           }
 
           "the guess does not match the regex" when {
             "includes special characters" in {
-              (guessConnector.getUserInput _).expects().returns("&&&&&")
+              (guessConnector.getUserInput _).expects(Nil).returns("&&&&&")
               nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
             }
 
             "includes numbers" in {
-              (guessConnector.getUserInput _).expects().returns("12345")
+              (guessConnector.getUserInput _).expects(Nil).returns("12345")
               nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
             }
           }
 
           "the guess does not correspond to a word in the words file" in {
-            (guessConnector.getUserInput _).expects().returns(missingWord)
+            (guessConnector.getUserInput _).expects(Nil).returns(missingWord)
             nextStateF(UserInputGuess, Nil) shouldBe (PrintGameBoard, Nil)
           }
         }
