@@ -39,5 +39,4 @@ final class WordGuessTest extends AnyWordSpecLike with Matchers {
       WordGuess(targetWord.map(IncorrectGuess.apply).toList).show shouldBe targetWord
     }
   }
-
 }

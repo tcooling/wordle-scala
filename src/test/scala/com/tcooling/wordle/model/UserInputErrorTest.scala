@@ -20,5 +20,4 @@ final class UserInputErrorTest extends AnyWordSpecLike with Matchers {
       }
     }
   }
-
 }

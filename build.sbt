@@ -15,7 +15,6 @@ lazy val wordleScala = Project(id = "wordle-scala", base = file("."))
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "2.10.0",
-      "org.scalamock" %% "scalamock" % "4.4.0"  % Test cross CrossVersion.for3Use2_13,
       "org.scalatest" %% "scalatest" % "3.2.17" % Test
     )
   )

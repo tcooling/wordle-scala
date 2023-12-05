@@ -31,5 +31,4 @@ final class WordRegexTest extends AnyWordSpecLike with Matchers {
       }
     }
   }
-
 }

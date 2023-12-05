@@ -21,5 +21,4 @@ final class WordsReaderTest extends AnyWordSpecLike with Matchers {
       WordsReader.getLines(filename = "fileDoesNotExist.txt").isFailure shouldBe true
     }
   }
-
 }

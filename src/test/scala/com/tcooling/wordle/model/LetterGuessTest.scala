@@ -30,5 +30,4 @@ final class LetterGuessTest extends AnyWordSpecLike with Matchers {
       }
     }
   }
-
 }

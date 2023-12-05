@@ -54,5 +54,4 @@ final class UserInputParserTest extends AnyWordSpecLike with Matchers {
       }
     }
   }
-
 }
