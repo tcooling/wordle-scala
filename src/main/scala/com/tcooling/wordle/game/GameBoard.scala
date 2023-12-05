@@ -15,7 +15,7 @@ object GameBoard {
    * Generate the game board and put each user guess on the board in the correct colour
    */
   def generateGameBoard(wordLength: Int, numberOfGuesses: Int, previousGuesses: List[WordGuess]): List[String] = {
-    val emptyRow = List.fill(wordLength)(startSeparator + " " + endSeparator)
+    val emptyRow = List.fill(wordLength)(s"$startSeparator $endSeparator")
 
     @tailrec
     def loop(previousGuesses: List[WordGuess], numberOfGuesses: Int, gameBoard: List[String]): List[String] =
@@ -34,7 +34,7 @@ object GameBoard {
    * colour is the letter guess itself, which is between a start and end separator.
    */
   def generateBoardRow(wordGuess: WordGuess): String = wordGuess.letterGuesses.map { letterGuess =>
-    startSeparator + letterGuess.show + endSeparator
+    s"$startSeparator${letterGuess.show}$endSeparator"
   }.mkString
 
 }

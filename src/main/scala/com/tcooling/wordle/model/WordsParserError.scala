@@ -6,7 +6,7 @@ package com.tcooling.wordle.model
 sealed trait WordsParserError
 
 object WordsParserError {
-  final case object FileParseError extends WordsParserError
-  final case object EmptyFileError extends WordsParserError
-  final case object InvalidWordsError extends WordsParserError
+  case object FileParseError extends WordsParserError
+  case object EmptyFileError extends WordsParserError
+  case object InvalidWordsError extends WordsParserError
 }

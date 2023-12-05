@@ -109,7 +109,7 @@ object WordleFSM {
       )
     )
     println("The letter I is in the word but in the wrong spot.")
-    println(GameBoard.generateBoardRow(WordGuess("VAGUE".map(IncorrectGuess).toList)))
+    println(GameBoard.generateBoardRow(WordGuess("VAGUE".map(IncorrectGuess.apply).toList)))
     println("None of the letters are in the word in any spot.")
     println(separator)
     PrintGameBoard -> Nil

@@ -7,12 +7,12 @@ package com.tcooling.wordle.model
 sealed trait FSM
 
 object FSM {
-  final case object Start extends FSM
-  final case object PrintHelp extends FSM
-  final case object PrintGameBoard extends FSM
-  final case object CheckForWinOrLoss extends FSM
-  final case object UserInputGuess extends FSM
-  final case object Win extends FSM
-  final case object Lose extends FSM
-  final case object Exit extends FSM
+  case object Start extends FSM
+  case object PrintHelp extends FSM
+  case object PrintGameBoard extends FSM
+  case object CheckForWinOrLoss extends FSM
+  case object UserInputGuess extends FSM
+  case object Win extends FSM
+  case object Lose extends FSM
+  case object Exit extends FSM
 }

@@ -2,9 +2,10 @@ package com.tcooling.wordle.model
 
 import cats.implicits.toShow
 import com.tcooling.wordle.model.UserInputError.{IncorrectLength, NonLetterCharacter, WordDoesNotExist, showUserInputError}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class UserInputErrorTest extends WordSpecLike with Matchers {
+final class UserInputErrorTest extends AnyWordSpecLike with Matchers {
 
   private val blue:  String = Console.BLUE
   private val reset: String = Console.RESET

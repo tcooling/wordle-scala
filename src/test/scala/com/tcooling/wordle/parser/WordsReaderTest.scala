@@ -1,10 +1,11 @@
 package com.tcooling.wordle.parser
 
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
 import scala.util.Success
 
-final class WordsReaderTest extends WordSpecLike with Matchers {
+final class WordsReaderTest extends AnyWordSpecLike with Matchers {
 
   "WordsReader" should {
     "read a valid file and return a list of lines" in {

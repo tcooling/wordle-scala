@@ -1,10 +1,10 @@
 package com.tcooling.wordle.input
 
-import cats.data.NonEmptySet
-import com.tcooling.wordle.model.WordleConfig
+final class ComputerInputGuessConnector() extends GuessInputConnector {
 
-final class ComputerInputGuessConnector(wordSet: NonEmptySet[String], wordleConfig: WordleConfig) extends GuessInputConnector {
-
+  /**
+   * When implementing, will need to pass the word set and config to this class
+   */
   override def getUserInput(): String = "TODO"
 
 }

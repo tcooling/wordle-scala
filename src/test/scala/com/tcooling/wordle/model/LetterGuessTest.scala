@@ -2,9 +2,10 @@ package com.tcooling.wordle.model
 
 import cats.implicits.toShow
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class LetterGuessTest extends WordSpecLike with Matchers {
+final class LetterGuessTest extends AnyWordSpecLike with Matchers {
 
   private val red:    String = Console.RED
   private val yellow: String = Console.YELLOW

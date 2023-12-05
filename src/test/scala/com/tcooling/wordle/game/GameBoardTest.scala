@@ -1,9 +1,10 @@
 package com.tcooling.wordle.game
 
 import com.tcooling.wordle.model.WordGuess
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class GameBoardTest extends WordSpecLike with Matchers {
+final class GameBoardTest extends AnyWordSpecLike with Matchers {
 
   private val startSeparator: Char   = '['
   private val endSeparator:   Char   = ']'
@@ -41,7 +42,7 @@ final class GameBoardTest extends WordSpecLike with Matchers {
     }
 
     "generate the whole game board" when {
-      val emptyRow = List.fill(wordLength)(startSeparator + " " + endSeparator).mkString
+      val emptyRow = List.fill(wordLength)(s"$startSeparator $endSeparator").mkString
 
       "no guesses have been input" in {
         generateGameBoardF(Nil) shouldBe List.fill(numGuesses)(emptyRow)
@@ -76,6 +77,6 @@ final class GameBoardTest extends WordSpecLike with Matchers {
     word.map(createSquare(consoleColour, _)).mkString
 
   private def createSquare(consoleColour: String, letter: Char): String =
-    startSeparator + consoleColour + letter + Console.RESET + endSeparator
+    s"$startSeparator$consoleColour$letter${Console.RESET}$endSeparator"
 
 }

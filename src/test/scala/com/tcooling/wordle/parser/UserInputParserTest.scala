@@ -3,9 +3,10 @@ package com.tcooling.wordle.parser
 import cats.data.{NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.model.UserInputError
 import com.tcooling.wordle.model.UserInputError.{IncorrectLength, NonLetterCharacter, WordDoesNotExist}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class UserInputParserTest extends WordSpecLike with Matchers {
+final class UserInputParserTest extends AnyWordSpecLike with Matchers {
 
   private val wordLength: Int                 = 5
   private val allWords:   NonEmptySet[String] = NonEmptyList.of(head = "VAGUE", tail = "CLICK").toNes
