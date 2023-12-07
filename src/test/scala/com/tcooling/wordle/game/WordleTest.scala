@@ -24,6 +24,7 @@ final class WordleTest extends AnyWordSpecLike with Matchers {
    * the end state (no more guesses are requested for user input).
    */
   private def guessConnector(guesses: List[String]): GuessInputConnector = new GuessInputConnector {
+    @SuppressWarnings(Array("DisableSyntax.var"))
     var index = 0
     override def getUserInput: String = {
       val guess = guesses(index)

@@ -1,4 +1,4 @@
-import _root_.io.github.davidgregory084.TpolecatPlugin.autoImport.{ScalacOptions, tpolecatScalacOptions}
+import _root_.io.github.davidgregory084.TpolecatPlugin.autoImport.{tpolecatScalacOptions, ScalacOptions}
 
 ThisBuild / organization := "com.tcooling"
 ThisBuild / name := "wordle-scala"

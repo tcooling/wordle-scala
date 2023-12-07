@@ -11,6 +11,8 @@ import scala.util.{Failure, Success, Try}
 final class WordsParserTest extends AnyWordSpecLike with Matchers {
 
   private val filename: Filename = Filename.apply("someWordsFile.txt")
+
+  @SuppressWarnings(Array("DisableSyntax.throw"))
   private def fileReader(expectedFilename: Filename, linesTry: Try[List[String]]): FileReader = (filename: Filename) =>
     if (filename == expectedFilename) {
       linesTry
