@@ -2,7 +2,7 @@ package com.tcooling.wordle.model
 
 import cats.Show
 
-sealed abstract class UserInputError(val errorMessage: String)
+sealed trait UserInputError(val errorMessage: String)
 
 object UserInputError {
 
