@@ -5,7 +5,7 @@ import com.tcooling.wordle.game.WordleFSM.State
 import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.{Exit, Start}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
-import com.tcooling.wordle.model.{FSM, WordGuess, WordleConfig, WordsParserError}
+import com.tcooling.wordle.model.{FSM, TargetWord, WordGuess, WordleConfig, WordsParserError}
 import com.tcooling.wordle.parser.{FileReader, WordsParser}
 
 import scala.annotation.tailrec
@@ -23,13 +23,13 @@ final class Wordle(
       case Right(allWords) =>
         println(
           s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength.value}")
-        val targetWord = randomWord(allWords)
+        val targetWord = TargetWord.apply(randomWord(allWords))
         gameLoop(config, targetWord, allWords, guessConnector)
     }
 
   private def gameLoop(
       config: WordleConfig,
-      targetWord: String,
+      targetWord: TargetWord,
       allWords: NonEmptySet[String],
       guessConnector: GuessInputConnector
   ): Unit = {

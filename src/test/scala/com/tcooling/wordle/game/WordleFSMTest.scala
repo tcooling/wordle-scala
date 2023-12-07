@@ -2,7 +2,7 @@ package com.tcooling.wordle.game
 
 import cats.data.{NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.input.GuessInputConnector
-import com.tcooling.wordle.model.WordLength
+import com.tcooling.wordle.model.{TargetWord, WordLength}
 import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.{FSM, Filename, NumberOfGuesses, WordGuess, WordleConfig}
 import WordleFSM.State
@@ -17,16 +17,16 @@ final class WordleFSMTest extends AnyWordSpecLike with Matchers {
     numberOfGuesses = NumberOfGuesses.apply(6)
   )
 
-  private val word1: String       = "HELLO"
-  private val word2: String       = "CLICK"
-  private val word3: String       = "HORSE"
-  private val word4: String       = "GREAT"
-  private val word5: String       = "ELDER"
-  private val word6: String       = "CLEAN"
-  private val targetWord: String  = "VAGUE"
-  private val missingWord: String = "ABCDE"
+  private val word1: String          = "HELLO"
+  private val word2: String          = "CLICK"
+  private val word3: String          = "HORSE"
+  private val word4: String          = "GREAT"
+  private val word5: String          = "ELDER"
+  private val word6: String          = "CLEAN"
+  private val targetWord: TargetWord = TargetWord.apply("VAGUE")
+  private val missingWord: String    = "ABCDE"
   private val allWords: NonEmptySet[String] =
-    NonEmptyList.of(targetWord, word1, word2, word3, word4, word5, word6).toNes
+    NonEmptyList.of(targetWord.value, word1, word2, word3, word4, word5, word6).toNes
 
   private val wordGuessF: String => WordGuess = WordGuess(_, targetWord)
 
@@ -66,12 +66,12 @@ final class WordleFSMTest extends AnyWordSpecLike with Matchers {
           }
 
           "the first guess is correct" in {
-            val guesses: List[WordGuess] = List(targetWord).map(wordGuessF)
+            val guesses: List[WordGuess] = List(targetWord.value).map(wordGuessF)
             withNextState(CheckForWinOrLoss, guesses) shouldBe (Win, guesses)
           }
 
           "the last guess is correct" in {
-            val guesses: List[WordGuess] = List(word1, word2, word3, word4, word5, targetWord).map(wordGuessF)
+            val guesses: List[WordGuess] = List(word1, word2, word3, word4, word5, targetWord.value).map(wordGuessF)
             withNextState(CheckForWinOrLoss, guesses) shouldBe (Win, guesses)
           }
         }
@@ -125,7 +125,8 @@ final class WordleFSMTest extends AnyWordSpecLike with Matchers {
       }
 
       "Win" in {
-        withNextState(Win, List(targetWord).map(wordGuessF)) shouldBe (Exit, List(targetWord).map(wordGuessF))
+        withNextState(Win, List(targetWord.value).map(wordGuessF)) shouldBe (Exit, List(targetWord.value).map(
+          wordGuessF))
       }
 
       "Lose" in {

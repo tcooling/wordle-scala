@@ -6,7 +6,7 @@ import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
-import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, WordGuess, WordLength, WordleConfig}
+import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, TargetWord, WordGuess, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.UserInputParser
 
 object WordleFSM {
@@ -21,7 +21,7 @@ object WordleFSM {
    */
   def nextState(
       config: WordleConfig,
-      targetWord: String,
+      targetWord: TargetWord,
       allWords: NonEmptySet[String],
       guessConnector: GuessInputConnector
   )(state: FSM, guesses: List[WordGuess]): State = state match {
@@ -46,13 +46,15 @@ object WordleFSM {
     Exit -> guesses
   }
 
-  private def lose(targetWord: String, guesses: List[WordGuess]): State = {
-    println(s"You failed to guess the word, the word was $targetWord")
+  private def lose(targetWord: TargetWord, guesses: List[WordGuess]): State = {
+    println(s"You failed to guess the word, the word was ${targetWord.value}")
     Exit -> guesses
   }
 
-  private def checkForWinOrLoss(targetWord: String, numberOfGuesses: NumberOfGuesses, guesses: List[WordGuess]): State =
-    if (guesses.lastOption.map(_.show).contains(targetWord)) Win -> guesses
+  private def checkForWinOrLoss(targetWord: TargetWord,
+                                numberOfGuesses: NumberOfGuesses,
+                                guesses: List[WordGuess]): State =
+    if (guesses.lastOption.map(_.show).contains(targetWord.value)) Win -> guesses
     else if (guesses.length == numberOfGuesses.value) Lose -> guesses
     else UserInputGuess                                    -> guesses
 
@@ -60,7 +62,7 @@ object WordleFSM {
       allWords: NonEmptySet[String],
       guessConnector: GuessInputConnector,
       wordLength: WordLength,
-      targetWord: String,
+      targetWord: TargetWord,
       guesses: List[WordGuess]
   ): State = {
     println("Guess: ")
