@@ -11,10 +11,10 @@ import com.tcooling.wordle.parser.{FileReader, WordsParser}
 import scala.annotation.tailrec
 
 final class Wordle(
-  config:         WordleConfig,
-  fileReader:     FileReader,
-  randomWord:     NonEmptySet[String] => String,
-  guessConnector: GuessInputConnector
+    config: WordleConfig,
+    fileReader: FileReader,
+    randomWord: NonEmptySet[String] => String,
+    guessConnector: GuessInputConnector
 ) {
 
   def startGame(): Unit =
@@ -27,10 +27,10 @@ final class Wordle(
     }
 
   private def gameLoop(
-    config:         WordleConfig,
-    targetWord:     String,
-    allWords:       NonEmptySet[String],
-    guessConnector: GuessInputConnector
+      config: WordleConfig,
+      targetWord: String,
+      allWords: NonEmptySet[String],
+      guessConnector: GuessInputConnector
   ): Unit = {
     val nextStateF: (FSM, List[WordGuess]) => (FSM, List[WordGuess]) =
       WordleFSM.nextState(config, targetWord, allWords, guessConnector)(_, _)

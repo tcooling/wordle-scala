@@ -31,7 +31,8 @@ final class WordGuessTest extends AnyWordSpecLike with Matchers {
 
       "none of the letters from the input word match the target word" in {
         val allLettersIncorrectGuess = "CLICK"
-        WordGuess(allLettersIncorrectGuess, targetWord) shouldBe WordGuess(allLettersIncorrectGuess.map(IncorrectGuess.apply).toList)
+        WordGuess(allLettersIncorrectGuess, targetWord) shouldBe WordGuess(
+          allLettersIncorrectGuess.map(IncorrectGuess.apply).toList)
       }
     }
 

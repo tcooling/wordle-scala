@@ -16,15 +16,16 @@ final class WordleFSMTest extends AnyWordSpecLike with Matchers {
     numberOfGuesses = 6
   )
 
-  private val word1:       String              = "HELLO"
-  private val word2:       String              = "CLICK"
-  private val word3:       String              = "HORSE"
-  private val word4:       String              = "GREAT"
-  private val word5:       String              = "ELDER"
-  private val word6:       String              = "CLEAN"
-  private val targetWord:  String              = "VAGUE"
-  private val missingWord: String              = "ABCDE"
-  private val allWords:    NonEmptySet[String] = NonEmptyList.of(targetWord, word1, word2, word3, word4, word5, word6).toNes
+  private val word1: String       = "HELLO"
+  private val word2: String       = "CLICK"
+  private val word3: String       = "HORSE"
+  private val word4: String       = "GREAT"
+  private val word5: String       = "ELDER"
+  private val word6: String       = "CLEAN"
+  private val targetWord: String  = "VAGUE"
+  private val missingWord: String = "ABCDE"
+  private val allWords: NonEmptySet[String] =
+    NonEmptyList.of(targetWord, word1, word2, word3, word4, word5, word6).toNes
 
   private val wordGuessF: String => WordGuess = WordGuess(_, targetWord)
 
@@ -33,7 +34,9 @@ final class WordleFSMTest extends AnyWordSpecLike with Matchers {
       config = wordleConfig,
       targetWord = targetWord,
       allWords = allWords,
-      guessConnector = () => guess
+      guessConnector = new GuessInputConnector {
+        override def getUserInput: String = guess
+      }
     )(state, guesses)
 
   "WordleFSM" should {

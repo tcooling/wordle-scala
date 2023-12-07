@@ -8,10 +8,11 @@ import org.scalatest.matchers.should.Matchers
 
 final class UserInputParserTest extends AnyWordSpecLike with Matchers {
 
-  private val wordLength: Int                 = 5
-  private val allWords:   NonEmptySet[String] = NonEmptyList.of(head = "VAGUE", tail = "CLICK").toNes
+  private val wordLength: Int               = 5
+  private val allWords: NonEmptySet[String] = NonEmptyList.of(head = "VAGUE", tail = "CLICK").toNes
 
-  private val parseGuessF: String => Either[UserInputError, String] = UserInputParser.parseGuess(allWords, _, wordLength)
+  private val parseGuessF: String => Either[UserInputError, String] =
+    UserInputParser.parseGuess(allWords, _, wordLength)
 
   "UserInputParser" should {
     "parse valid user input" when {

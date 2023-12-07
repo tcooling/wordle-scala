@@ -1,37 +1,38 @@
 package com.tcooling.wordle.game
 
-import com.tcooling.wordle.model.WordGuess
+import com.tcooling.wordle.model.{boardRow, WordGuess}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
 
 final class GameBoardTest extends AnyWordSpecLike with Matchers {
 
-  private val startSeparator: Char   = '['
-  private val endSeparator:   Char   = ']'
-  private val wordLength:     Int    = 5
-  private val numGuesses:     Int    = 6
-  private val targetWord:     String = "VAGUE"
+  private val startSeparator: Char = '['
+  private val endSeparator: Char   = ']'
+  private val wordLength: Int      = 5
+  private val numGuesses: Int      = 6
+  private val targetWord: String   = "VAGUE"
 
-  private val wordGuessF:         String => WordGuess             = WordGuess(_, targetWord)
-  private val generateGameBoardF: List[WordGuess] => List[String] = GameBoard.generateGameBoard(wordLength, numGuesses, _)
+  private val wordGuessF: String => WordGuess = WordGuess(_, targetWord)
+  private val generateGameBoardF: List[WordGuess] => List[String] =
+    GameBoard.generateGameBoard(wordLength, numGuesses, _)
 
   "GameBoard" should {
     "generate a board row" when {
       "none of the letters of the guess are in the target word" in {
-        GameBoard.generateBoardRow(wordGuessF("QQQQQ")) shouldBe createRow(Console.RED, "QQQQQ")
+        wordGuessF("QQQQQ").boardRow shouldBe createRow(Console.RED, "QQQQQ")
       }
 
       "all of the letters of the guess are in the target word in the correct position" in {
-        GameBoard.generateBoardRow(wordGuessF(targetWord)) shouldBe createRow(Console.GREEN, targetWord)
+        wordGuessF(targetWord).boardRow shouldBe createRow(Console.GREEN, targetWord)
       }
 
       "all of the letters of the guess are in the target word in the wrong position" in {
         val incorrectPositionWord = "AVUGA"
-        GameBoard.generateBoardRow(wordGuessF(incorrectPositionWord)) shouldBe createRow(Console.YELLOW, incorrectPositionWord)
+        wordGuessF(incorrectPositionWord).boardRow shouldBe createRow(Console.YELLOW, incorrectPositionWord)
       }
 
       "there are a mix of letters that are valid, in the incorrect position and invalid" in {
-        GameBoard.generateBoardRow(wordGuessF("HAVEN")) shouldBe List(
+        wordGuessF("HAVEN").boardRow shouldBe List(
           createSquare(Console.RED, 'H'),
           createSquare(Console.GREEN, 'A'),
           createSquare(Console.YELLOW, 'V'),

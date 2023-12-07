@@ -1,15 +1,13 @@
 package com.tcooling.wordle.game
 
-import cats.implicits.toShow
-import com.tcooling.wordle.model.LetterGuess.showLetterGuess
-import com.tcooling.wordle.model.WordGuess
+import com.tcooling.wordle.model.{boardRow, WordGuess}
 
 import scala.annotation.tailrec
 
 object GameBoard {
 
-  private val startSeparator: Char = '['
-  private val endSeparator:   Char = ']'
+  val startSeparator: Char = '['
+  val endSeparator: Char   = ']'
 
   /**
    * Generate the game board and put each user guess on the board in the correct colour
@@ -22,19 +20,11 @@ object GameBoard {
       if (numberOfGuesses == 0) gameBoard
       else
         previousGuesses match {
-          case head :: tail => loop(tail, numberOfGuesses - 1, gameBoard :+ generateBoardRow(head))
+          case head :: tail => loop(tail, numberOfGuesses - 1, gameBoard :+ head.boardRow)
           case Nil          => loop(Nil, numberOfGuesses - 1, gameBoard :+ emptyRow.mkString)
         }
 
     loop(previousGuesses, numberOfGuesses, gameBoard = Nil)
   }
-
-  /**
-   * Given the [[WordGuess]], create the string to be printed. The only character that is displayed using a console
-   * colour is the letter guess itself, which is between a start and end separator.
-   */
-  def generateBoardRow(wordGuess: WordGuess): String = wordGuess.letterGuesses.map { letterGuess =>
-    s"$startSeparator${letterGuess.show}$endSeparator"
-  }.mkString
 
 }

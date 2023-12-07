@@ -4,8 +4,9 @@ trait GuessInputConnector {
 
   /**
    * Get the guess from the user
-   * @return the user input guess
+   * @return
+   *   the user input guess
    */
-  def getUserInput(): String
+  def getUserInput: String
 
 }

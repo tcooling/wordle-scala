@@ -11,6 +11,6 @@ object UserInputError {
   }
 
   final case class IncorrectLength(wordLength: Int) extends UserInputError(s"Guess length not equal to $wordLength")
-  case object NonLetterCharacter extends UserInputError("Guess contained non letter character")
-  case object WordDoesNotExist extends UserInputError("Guess word does not exist")
+  case object NonLetterCharacter                    extends UserInputError("Guess contained non letter character")
+  case object WordDoesNotExist                      extends UserInputError("Guess word does not exist")
 }

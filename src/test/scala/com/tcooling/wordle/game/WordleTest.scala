@@ -15,17 +15,17 @@ final class WordleTest extends AnyWordSpecLike with Matchers {
     wordLength = 5,
     numberOfGuesses = 6
   )
-  private val fileReader:        FileReader                    = WordsReader
+  private val fileReader: FileReader                           = WordsReader
   private val chooseRandomWordF: NonEmptySet[String] => String = _ => targetWord
 
   /**
-   * An out of bounds exception will be thrown if the next index in the list does not exist, meaning the tests will
-   * fail if the [[GuessInputConnector]] is called when not supposed to be called. Basically, asserting that the FSM
-   * reaches the end state (no more guesses are requested for user input).
+   * An out of bounds exception will be thrown if the next index in the list does not exist, meaning the tests will fail
+   * if the [[GuessInputConnector]] is called when not supposed to be called. Basically, asserting that the FSM reaches
+   * the end state (no more guesses are requested for user input).
    */
   private def guessConnector(guesses: List[String]): GuessInputConnector = new GuessInputConnector {
     var index = 0
-    override def getUserInput(): String = {
+    override def getUserInput: String = {
       val guess = guesses(index)
       index += 1
       guess
@@ -64,9 +64,9 @@ final class WordleTest extends AnyWordSpecLike with Matchers {
         val wrongLengthGuesses      = List("", "ABC", "TESTING")
         val invalidWordGuesses      = List("AAAAA", "BBBBB", "CCCCC")
         val validGuesses            = List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN")
-        val invalidGuesses          = specialCharacterGuesses ::: nonLetterGuesses ::: wrongLengthGuesses ::: invalidWordGuesses
-        val guesses                 = invalidGuesses ::: validGuesses
-        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, guessConnector(guesses))
+        val invalidGuesses = specialCharacterGuesses ::: nonLetterGuesses ::: wrongLengthGuesses ::: invalidWordGuesses
+        val guesses        = invalidGuesses ::: validGuesses
+        val wordle         = new Wordle(config, fileReader, chooseRandomWordF, guessConnector(guesses))
         wordle.startGame()
       }
     }

@@ -7,10 +7,10 @@ import org.scalatest.matchers.should.Matchers
 
 final class LetterGuessTest extends AnyWordSpecLike with Matchers {
 
-  private val red:    String = Console.RED
+  private val red: String    = Console.RED
   private val yellow: String = Console.YELLOW
-  private val green:  String = Console.GREEN
-  private val reset:  String = Console.RESET
+  private val green: String  = Console.GREEN
+  private val reset: String  = Console.RESET
 
   "LetterGuess" should {
     "show a letter in the corresponding colour" when {

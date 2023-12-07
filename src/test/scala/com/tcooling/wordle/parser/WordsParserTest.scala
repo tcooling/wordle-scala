@@ -16,7 +16,7 @@ final class WordsParserTest extends AnyWordSpecLike with Matchers {
     } else throw new RuntimeException("Filename does not match")
 
   private val fileReaderF: Try[List[String]] => FileReader = fileReader(filename, _)
-  private val wordLength:  Int                             = 5
+  private val wordLength: Int                              = 5
 
   private def wordsParser(linesTry: Try[List[String]]): WordsParser =
     WordsParser(filename, wordLength, fileReaderF(linesTry))
