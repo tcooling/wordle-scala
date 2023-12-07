@@ -21,7 +21,8 @@ final class Wordle(
     WordsParser.apply(config.filename, config.wordLength, fileReader).parseWords match {
       case Left(error) => printError(error)
       case Right(allWords) =>
-        println(s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength}")
+        println(
+          s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength.value}")
         val targetWord = randomWord(allWords)
         gameLoop(config, targetWord, allWords, guessConnector)
     }

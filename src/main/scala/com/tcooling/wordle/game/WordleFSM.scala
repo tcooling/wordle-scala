@@ -6,7 +6,7 @@ import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
-import com.tcooling.wordle.model.{boardRow, FSM, WordGuess, WordleConfig}
+import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, WordGuess, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.UserInputParser
 
 object WordleFSM {
@@ -51,15 +51,15 @@ object WordleFSM {
     Exit -> guesses
   }
 
-  private def checkForWinOrLoss(targetWord: String, numberOfGuesses: Int, guesses: List[WordGuess]): State =
+  private def checkForWinOrLoss(targetWord: String, numberOfGuesses: NumberOfGuesses, guesses: List[WordGuess]): State =
     if (guesses.lastOption.map(_.show).contains(targetWord)) Win -> guesses
-    else if (guesses.length == numberOfGuesses) Lose -> guesses
-    else UserInputGuess                              -> guesses
+    else if (guesses.length == numberOfGuesses.value) Lose -> guesses
+    else UserInputGuess                                    -> guesses
 
   private def userInputGuess(
       allWords: NonEmptySet[String],
       guessConnector: GuessInputConnector,
-      wordLength: Int,
+      wordLength: WordLength,
       targetWord: String,
       guesses: List[WordGuess]
   ): State = {

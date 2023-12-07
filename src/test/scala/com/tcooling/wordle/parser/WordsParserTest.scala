@@ -1,6 +1,7 @@
 package com.tcooling.wordle.parser
 
 import cats.data.NonEmptySet
+import com.tcooling.wordle.model.{Filename, WordLength}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -9,14 +10,14 @@ import scala.util.{Failure, Success, Try}
 
 final class WordsParserTest extends AnyWordSpecLike with Matchers {
 
-  private val filename: String = "someWordsFile.txt"
-  private def fileReader(expectedFilename: String, linesTry: Try[List[String]]): FileReader = (filename: String) =>
+  private val filename: Filename = Filename.apply("someWordsFile.txt")
+  private def fileReader(expectedFilename: Filename, linesTry: Try[List[String]]): FileReader = (filename: Filename) =>
     if (filename == expectedFilename) {
       linesTry
     } else throw new RuntimeException("Filename does not match")
 
   private val fileReaderF: Try[List[String]] => FileReader = fileReader(filename, _)
-  private val wordLength: Int                              = 5
+  private val wordLength: WordLength                       = WordLength.apply(5)
 
   private def wordsParser(linesTry: Try[List[String]]): WordsParser =
     WordsParser(filename, wordLength, fileReaderF(linesTry))

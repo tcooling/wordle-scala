@@ -2,7 +2,7 @@ package com.tcooling.wordle.game
 
 import cats.data.NonEmptySet
 import com.tcooling.wordle.input.GuessInputConnector
-import com.tcooling.wordle.model.WordleConfig
+import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.{FileReader, WordsReader}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -11,9 +11,9 @@ final class WordleTest extends AnyWordSpecLike with Matchers {
 
   private val targetWord: String = "VAGUE"
   private val config: WordleConfig = WordleConfig(
-    filename = "words.txt",
-    wordLength = 5,
-    numberOfGuesses = 6
+    filename = Filename.apply("words.txt"),
+    wordLength = WordLength.apply(5),
+    numberOfGuesses = NumberOfGuesses.apply(6)
   )
   private val fileReader: FileReader                           = WordsReader
   private val chooseRandomWordF: NonEmptySet[String] => String = _ => targetWord

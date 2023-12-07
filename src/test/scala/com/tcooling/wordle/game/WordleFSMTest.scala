@@ -2,8 +2,9 @@ package com.tcooling.wordle.game
 
 import cats.data.{NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.input.GuessInputConnector
+import com.tcooling.wordle.model.WordLength
 import com.tcooling.wordle.model.FSM.*
-import com.tcooling.wordle.model.{FSM, WordGuess, WordleConfig}
+import com.tcooling.wordle.model.{FSM, Filename, NumberOfGuesses, WordGuess, WordleConfig}
 import WordleFSM.State
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -11,9 +12,9 @@ import org.scalatest.matchers.should.Matchers
 final class WordleFSMTest extends AnyWordSpecLike with Matchers {
 
   private val wordleConfig: WordleConfig = WordleConfig(
-    filename = "words.txt",
-    wordLength = 5,
-    numberOfGuesses = 6
+    filename = Filename.apply("words.txt"),
+    wordLength = WordLength.apply(5),
+    numberOfGuesses = NumberOfGuesses.apply(6)
   )
 
   private val word1: String       = "HELLO"

@@ -1,16 +1,16 @@
 package com.tcooling.wordle.game
 
-import com.tcooling.wordle.model.{boardRow, WordGuess}
+import com.tcooling.wordle.model.{boardRow, NumberOfGuesses, WordGuess, WordLength}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
 
 final class GameBoardTest extends AnyWordSpecLike with Matchers {
 
-  private val startSeparator: Char = '['
-  private val endSeparator: Char   = ']'
-  private val wordLength: Int      = 5
-  private val numGuesses: Int      = 6
-  private val targetWord: String   = "VAGUE"
+  private val startSeparator: Char        = '['
+  private val endSeparator: Char          = ']'
+  private val wordLength: WordLength      = WordLength.apply(5)
+  private val numGuesses: NumberOfGuesses = NumberOfGuesses.apply(6)
+  private val targetWord: String          = "VAGUE"
 
   private val wordGuessF: String => WordGuess = WordGuess(_, targetWord)
   private val generateGameBoardF: List[WordGuess] => List[String] =
@@ -43,10 +43,10 @@ final class GameBoardTest extends AnyWordSpecLike with Matchers {
     }
 
     "generate the whole game board" when {
-      val emptyRow = List.fill(wordLength)(s"$startSeparator $endSeparator").mkString
+      val emptyRow = List.fill(wordLength.value)(s"$startSeparator $endSeparator").mkString
 
       "no guesses have been input" in {
-        generateGameBoardF(Nil) shouldBe List.fill(numGuesses)(emptyRow)
+        generateGameBoardF(Nil) shouldBe List.fill(numGuesses.value)(emptyRow)
       }
 
       "one guess has been input" in {

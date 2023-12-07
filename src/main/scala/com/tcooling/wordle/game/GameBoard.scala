@@ -1,6 +1,6 @@
 package com.tcooling.wordle.game
 
-import com.tcooling.wordle.model.{boardRow, WordGuess}
+import com.tcooling.wordle.model.{boardRow, NumberOfGuesses, WordGuess, WordLength}
 
 import scala.annotation.tailrec
 
@@ -12,8 +12,10 @@ object GameBoard {
   /**
    * Generate the game board and put each user guess on the board in the correct colour
    */
-  def generateGameBoard(wordLength: Int, numberOfGuesses: Int, previousGuesses: List[WordGuess]): List[String] = {
-    val emptyRow = List.fill(wordLength)(s"$startSeparator $endSeparator")
+  def generateGameBoard(wordLength: WordLength,
+                        numberOfGuesses: NumberOfGuesses,
+                        previousGuesses: List[WordGuess]): List[String] = {
+    val emptyRow = List.fill(wordLength.value)(s"$startSeparator $endSeparator")
 
     @tailrec
     def loop(previousGuesses: List[WordGuess], numberOfGuesses: Int, gameBoard: List[String]): List[String] =
@@ -24,7 +26,7 @@ object GameBoard {
           case Nil          => loop(Nil, numberOfGuesses - 1, gameBoard :+ emptyRow.mkString)
         }
 
-    loop(previousGuesses, numberOfGuesses, gameBoard = Nil)
+    loop(previousGuesses, numberOfGuesses.value, gameBoard = Nil)
   }
 
 }
