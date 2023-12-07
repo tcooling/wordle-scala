@@ -18,6 +18,6 @@ object Main extends App {
     numberOfGuesses = numberOfGuesses
   )
 
-  new Wordle(config, WordsReader, RandomWord.chooseRandomWord, UserInputGuessConnector).startGame()
+  Wordle(config, WordsReader, RandomWord.chooseRandomWord, UserInputGuessConnector).startGame()
 
 }

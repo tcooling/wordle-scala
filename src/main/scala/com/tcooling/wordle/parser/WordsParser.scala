@@ -4,12 +4,7 @@ import cats.data.{NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.model.WordsParserError
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 
-object WordsParser {
-  def apply(filename: String, wordLength: Int, fileReader: FileReader): WordsParser =
-    new WordsParser(filename, wordLength, fileReader)
-}
-
-final class WordsParser private (filename: String, wordLength: Int, fileReader: FileReader) {
+final class WordsParser(filename: String, wordLength: Int, fileReader: FileReader) {
 
   def parseWords: Either[WordsParserError, NonEmptySet[String]] = for {
     words                    <- fileReader.getLines(filename).toOption.toRight(FileParseError)
