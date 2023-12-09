@@ -1,8 +1,9 @@
 package com.tcooling.wordle.parser
 
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class WordRegexTest extends WordSpecLike with Matchers {
+final class WordRegexTest extends AnyWordSpecLike with Matchers {
 
   private val onSuccess: String = "onSuccess"
   private val onFailure: String = "onFailure"
@@ -30,5 +31,4 @@ final class WordRegexTest extends WordSpecLike with Matchers {
       }
     }
   }
-
 }

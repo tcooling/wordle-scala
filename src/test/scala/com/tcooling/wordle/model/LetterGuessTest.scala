@@ -2,14 +2,15 @@ package com.tcooling.wordle.model
 
 import cats.implicits.toShow
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class LetterGuessTest extends WordSpecLike with Matchers {
+final class LetterGuessTest extends AnyWordSpecLike with Matchers {
 
-  private val red:    String = Console.RED
+  private val red: String    = Console.RED
   private val yellow: String = Console.YELLOW
-  private val green:  String = Console.GREEN
-  private val reset:  String = Console.RESET
+  private val green: String  = Console.GREEN
+  private val reset: String  = Console.RESET
 
   "LetterGuess" should {
     "show a letter in the corresponding colour" when {
@@ -29,5 +30,4 @@ final class LetterGuessTest extends WordSpecLike with Matchers {
       }
     }
   }
-
 }

@@ -4,9 +4,10 @@ import cats.Show
 
 /**
  * For a particular letter in the users guess, encapsulate the result of the guess
- * @param consoleColour the colour in which to print the guess letter when displaying the board
+ * @param consoleColour
+ *   the colour in which to print the guess letter when displaying the board
  */
-sealed abstract class LetterGuess(val consoleColour: String) {
+sealed trait LetterGuess(val consoleColour: String) {
   val letter: Char
 }
 

@@ -3,10 +3,10 @@ package com.tcooling.wordle.game
 import cats.data.NonEmptySet
 import cats.implicits.toShow
 import com.tcooling.wordle.input.GuessInputConnector
-import com.tcooling.wordle.model.FSM._
+import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
-import com.tcooling.wordle.model.{FSM, WordGuess, WordleConfig}
+import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, TargetWord, WordGuess, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.UserInputParser
 
 object WordleFSM {
@@ -20,11 +20,11 @@ object WordleFSM {
    * Given a current FSM state and a list of guesses, a new FSM state and updated list of guesses will be returned
    */
   def nextState(
-    config:         WordleConfig,
-    targetWord:     String,
-    allWords:       NonEmptySet[String],
-    guessConnector: GuessInputConnector
-  )(state:          FSM, guesses: List[WordGuess]): State = state match {
+      config: WordleConfig,
+      targetWord: TargetWord,
+      allWords: NonEmptySet[String],
+      guessConnector: GuessInputConnector
+  )(state: FSM, guesses: List[WordGuess]): State = state match {
     case Start             => PrintHelp -> Nil
     case PrintHelp         => printHelp(config)
     case PrintGameBoard    => printGameBoard(guesses, config)
@@ -46,25 +46,27 @@ object WordleFSM {
     Exit -> guesses
   }
 
-  private def lose(targetWord: String, guesses: List[WordGuess]): State = {
-    println(s"You failed to guess the word, the word was $targetWord")
+  private def lose(targetWord: TargetWord, guesses: List[WordGuess]): State = {
+    println(s"You failed to guess the word, the word was ${targetWord.value}")
     Exit -> guesses
   }
 
-  private def checkForWinOrLoss(targetWord: String, numberOfGuesses: Int, guesses: List[WordGuess]): State =
-    if (guesses.lastOption.map(_.show).contains(targetWord)) Win -> guesses
-    else if (guesses.length == numberOfGuesses) Lose -> guesses
-    else UserInputGuess                              -> guesses
+  private def checkForWinOrLoss(targetWord: TargetWord,
+                                numberOfGuesses: NumberOfGuesses,
+                                guesses: List[WordGuess]): State =
+    if (guesses.lastOption.map(_.show).contains(targetWord.value)) Win -> guesses
+    else if (guesses.length == numberOfGuesses.value) Lose -> guesses
+    else UserInputGuess                                    -> guesses
 
   private def userInputGuess(
-    allWords:       NonEmptySet[String],
-    guessConnector: GuessInputConnector,
-    wordLength:     Int,
-    targetWord:     String,
-    guesses:        List[WordGuess]
+      allWords: NonEmptySet[String],
+      guessConnector: GuessInputConnector,
+      wordLength: WordLength,
+      targetWord: TargetWord,
+      guesses: List[WordGuess]
   ): State = {
     println("Guess: ")
-    val guess = guessConnector.getUserInput()
+    val guess = guessConnector.getUserInput
     val updatedGuesses = UserInputParser.parseGuess(allWords, guess, wordLength) match {
       case Left(err) =>
         println(err.show + "\nPlease try again.")
@@ -82,34 +84,30 @@ object WordleFSM {
     println("After each guess, the color of the tiles will change to show how close your guess was to the word.")
     println("Examples")
     println(
-      GameBoard.generateBoardRow(
-        WordGuess(
-          List(
-            CorrectGuess('W'),
-            IncorrectGuess('E'),
-            IncorrectGuess('A'),
-            IncorrectGuess('R'),
-            IncorrectGuess('Y')
-          )
+      WordGuess(
+        List(
+          CorrectGuess('W'),
+          IncorrectGuess('E'),
+          IncorrectGuess('A'),
+          IncorrectGuess('R'),
+          IncorrectGuess('Y')
         )
-      )
+      ).boardRow
     )
     println("The letter W is in the word and in the correct spot.")
     println(
-      GameBoard.generateBoardRow(
-        WordGuess(
-          List(
-            IncorrectGuess('P'),
-            WrongPositionGuess('I'),
-            IncorrectGuess('L'),
-            IncorrectGuess('L'),
-            IncorrectGuess('S')
-          )
+      WordGuess(
+        List(
+          IncorrectGuess('P'),
+          WrongPositionGuess('I'),
+          IncorrectGuess('L'),
+          IncorrectGuess('L'),
+          IncorrectGuess('S')
         )
-      )
+      ).boardRow
     )
     println("The letter I is in the word but in the wrong spot.")
-    println(GameBoard.generateBoardRow(WordGuess("VAGUE".map(IncorrectGuess).toList)))
+    println(WordGuess("VAGUE".map(IncorrectGuess.apply).toList).boardRow)
     println("None of the letters are in the word in any spot.")
     println(separator)
     PrintGameBoard -> Nil

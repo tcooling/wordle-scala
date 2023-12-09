@@ -2,22 +2,36 @@ package com.tcooling.wordle.game
 
 import cats.data.NonEmptySet
 import com.tcooling.wordle.input.GuessInputConnector
-import com.tcooling.wordle.model.WordleConfig
+import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.{FileReader, WordsReader}
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class WordleTest extends WordSpecLike with Matchers with MockFactory {
+final class WordleTest extends AnyWordSpecLike with Matchers {
 
   private val targetWord: String = "VAGUE"
   private val config: WordleConfig = WordleConfig(
-    filename = "words.txt",
-    wordLength = 5,
-    numberOfGuesses = 6
+    filename = Filename.apply("words.txt"),
+    wordLength = WordLength.apply(5),
+    numberOfGuesses = NumberOfGuesses.apply(6)
   )
-  private val fileReader:        FileReader                    = WordsReader
+  private val fileReader: FileReader                           = WordsReader
   private val chooseRandomWordF: NonEmptySet[String] => String = _ => targetWord
-  private val guessConnector:    GuessInputConnector           = mock[GuessInputConnector]
+
+  /**
+   * An out of bounds exception will be thrown if the next index in the list does not exist, meaning the tests will fail
+   * if the [[GuessInputConnector]] is called when not supposed to be called. Basically, asserting that the FSM reaches
+   * the end state (no more guesses are requested for user input).
+   */
+  private def guessConnector(guesses: List[String]): GuessInputConnector = new GuessInputConnector {
+    @SuppressWarnings(Array("DisableSyntax.var"))
+    var index = 0
+    override def getUserInput: String = {
+      val guess = guesses(index)
+      index += 1
+      guess
+    }
+  }
 
   "Wordle" should {
     "handle a player winning the game" when {
@@ -31,8 +45,7 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
           List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", targetWord)
         ).foreach { userInputGuesses =>
           withClue(s"for guesses $userInputGuesses") {
-            val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
-            mockUserInputGuesses(userInputGuesses)
+            val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector(userInputGuesses))
             wordle.startGame()
           }
         }
@@ -41,26 +54,22 @@ final class WordleTest extends WordSpecLike with Matchers with MockFactory {
 
     "handle a player losing the game" when {
       "each guess is valid" in {
-        val wordle = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
-        mockUserInputGuesses(List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN"))
+        val guesses = List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN")
+        val wordle  = new Wordle(config, fileReader, chooseRandomWordF, guessConnector(guesses))
         wordle.startGame()
       }
 
       "some guesses are the wrong number of letters, include special characters or are not valid words" in {
-        val wordle                  = new Wordle(config, fileReader, chooseRandomWordF, guessConnector)
         val specialCharacterGuesses = List("&&&&&", "+++++", "%%%%%")
         val nonLetterGuesses        = List("12345", "ABC12")
         val wrongLengthGuesses      = List("", "ABC", "TESTING")
         val invalidWordGuesses      = List("AAAAA", "BBBBB", "CCCCC")
         val validGuesses            = List("HELLO", "GREEN", "HORSE", "ELDER", "CLEAN", "CLOWN")
-        val invalidGuesses          = specialCharacterGuesses ::: nonLetterGuesses ::: wrongLengthGuesses ::: invalidWordGuesses
-        mockUserInputGuesses(invalidGuesses ::: validGuesses)
+        val invalidGuesses = specialCharacterGuesses ::: nonLetterGuesses ::: wrongLengthGuesses ::: invalidWordGuesses
+        val guesses        = invalidGuesses ::: validGuesses
+        val wordle         = new Wordle(config, fileReader, chooseRandomWordF, guessConnector(guesses))
         wordle.startGame()
       }
     }
   }
-
-  private def mockUserInputGuesses(guesses: List[String]): Unit =
-    guesses.foreach((guessConnector.getUserInput _).expects().returns(_))
-
 }

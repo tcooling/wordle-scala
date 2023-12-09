@@ -1,36 +1,38 @@
 package com.tcooling.wordle.game
 
-import com.tcooling.wordle.model.WordGuess
-import org.scalatest.{Matchers, WordSpecLike}
+import com.tcooling.wordle.model.{boardRow, NumberOfGuesses, TargetWord, WordGuess, WordLength}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class GameBoardTest extends WordSpecLike with Matchers {
+final class GameBoardTest extends AnyWordSpecLike with Matchers {
 
-  private val startSeparator: Char   = '['
-  private val endSeparator:   Char   = ']'
-  private val wordLength:     Int    = 5
-  private val numGuesses:     Int    = 6
-  private val targetWord:     String = "VAGUE"
+  private val startSeparator: Char        = '['
+  private val endSeparator: Char          = ']'
+  private val wordLength: WordLength      = WordLength.apply(5)
+  private val numGuesses: NumberOfGuesses = NumberOfGuesses.apply(6)
+  private val targetWord: TargetWord      = TargetWord.apply("VAGUE")
 
-  private val wordGuessF:         String => WordGuess             = WordGuess(_, targetWord)
-  private val generateGameBoardF: List[WordGuess] => List[String] = GameBoard.generateGameBoard(wordLength, numGuesses, _)
+  private val wordGuessF: String => WordGuess = WordGuess(_, targetWord)
+  private val generateGameBoardF: List[WordGuess] => List[String] =
+    GameBoard.generateGameBoard(wordLength, numGuesses, _)
 
   "GameBoard" should {
     "generate a board row" when {
       "none of the letters of the guess are in the target word" in {
-        GameBoard.generateBoardRow(wordGuessF("QQQQQ")) shouldBe createRow(Console.RED, "QQQQQ")
+        wordGuessF("QQQQQ").boardRow shouldBe createRow(Console.RED, "QQQQQ")
       }
 
       "all of the letters of the guess are in the target word in the correct position" in {
-        GameBoard.generateBoardRow(wordGuessF(targetWord)) shouldBe createRow(Console.GREEN, targetWord)
+        wordGuessF(targetWord.value).boardRow shouldBe createRow(Console.GREEN, targetWord.value)
       }
 
       "all of the letters of the guess are in the target word in the wrong position" in {
         val incorrectPositionWord = "AVUGA"
-        GameBoard.generateBoardRow(wordGuessF(incorrectPositionWord)) shouldBe createRow(Console.YELLOW, incorrectPositionWord)
+        wordGuessF(incorrectPositionWord).boardRow shouldBe createRow(Console.YELLOW, incorrectPositionWord)
       }
 
       "there are a mix of letters that are valid, in the incorrect position and invalid" in {
-        GameBoard.generateBoardRow(wordGuessF("HAVEN")) shouldBe List(
+        wordGuessF("HAVEN").boardRow shouldBe List(
           createSquare(Console.RED, 'H'),
           createSquare(Console.GREEN, 'A'),
           createSquare(Console.YELLOW, 'V'),
@@ -41,15 +43,15 @@ final class GameBoardTest extends WordSpecLike with Matchers {
     }
 
     "generate the whole game board" when {
-      val emptyRow = List.fill(wordLength)(startSeparator + " " + endSeparator).mkString
+      val emptyRow = List.fill(wordLength.value)(s"$startSeparator $endSeparator").mkString
 
       "no guesses have been input" in {
-        generateGameBoardF(Nil) shouldBe List.fill(numGuesses)(emptyRow)
+        generateGameBoardF(Nil) shouldBe List.fill(numGuesses.value)(emptyRow)
       }
 
       "one guess has been input" in {
-        generateGameBoardF(List(WordGuess(targetWord, targetWord))) shouldBe List(
-          createRow(Console.GREEN, targetWord),
+        generateGameBoardF(List(WordGuess(targetWord.value, targetWord))) shouldBe List(
+          createRow(Console.GREEN, targetWord.value),
           emptyRow,
           emptyRow,
           emptyRow,
@@ -59,14 +61,14 @@ final class GameBoardTest extends WordSpecLike with Matchers {
       }
 
       "all the guesses have been input" in {
-        val words = List("UEAVG", "XXXXX", "QQQQQ", "WWWWW", "ZZZZZ", targetWord)
+        val words = List("UEAVG", "XXXXX", "QQQQQ", "WWWWW", "ZZZZZ", targetWord.value)
         generateGameBoardF(words.map(WordGuess(_, targetWord))) shouldBe List(
           createRow(Console.YELLOW, "UEAVG"),
           createRow(Console.RED, "XXXXX"),
           createRow(Console.RED, "QQQQQ"),
           createRow(Console.RED, "WWWWW"),
           createRow(Console.RED, "ZZZZZ"),
-          createRow(Console.GREEN, targetWord)
+          createRow(Console.GREEN, targetWord.value)
         )
       }
     }
@@ -76,6 +78,6 @@ final class GameBoardTest extends WordSpecLike with Matchers {
     word.map(createSquare(consoleColour, _)).mkString
 
   private def createSquare(consoleColour: String, letter: Char): String =
-    startSeparator + consoleColour + letter + Console.RESET + endSeparator
+    s"$startSeparator$consoleColour$letter${Console.RESET}$endSeparator"
 
 }

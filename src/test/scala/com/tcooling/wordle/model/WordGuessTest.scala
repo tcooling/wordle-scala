@@ -1,18 +1,20 @@
 package com.tcooling.wordle.model
 
 import cats.implicits.toShow
+import com.tcooling.wordle.model.TargetWord
 import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.matchers.should.Matchers
 
-final class WordGuessTest extends WordSpecLike with Matchers {
+final class WordGuessTest extends AnyWordSpecLike with Matchers {
 
-  private val targetWord: String = "VAGUE"
+  private val targetWord: TargetWord = TargetWord.apply("VAGUE")
 
   "WordGuess" should {
     "be created from a target word and a user input word" when {
       "the words are the same" in {
-        WordGuess(targetWord, targetWord) shouldBe WordGuess(targetWord.map(CorrectGuess).toList)
+        WordGuess(targetWord.value, targetWord) shouldBe WordGuess(targetWord.value.map(CorrectGuess.apply).toList)
       }
 
       "some of the letters from the input word are in the target word, but in the wrong position" in {
@@ -30,13 +32,13 @@ final class WordGuessTest extends WordSpecLike with Matchers {
 
       "none of the letters from the input word match the target word" in {
         val allLettersIncorrectGuess = "CLICK"
-        WordGuess(allLettersIncorrectGuess, targetWord) shouldBe WordGuess(allLettersIncorrectGuess.map(IncorrectGuess).toList)
+        WordGuess(allLettersIncorrectGuess, targetWord) shouldBe WordGuess(
+          allLettersIncorrectGuess.map(IncorrectGuess.apply).toList)
       }
     }
 
     "show a word guess" in {
-      WordGuess(targetWord.map(IncorrectGuess).toList).show shouldBe targetWord
+      WordGuess(targetWord.value.map(IncorrectGuess.apply).toList).show shouldBe targetWord.value
     }
   }
-
 }
