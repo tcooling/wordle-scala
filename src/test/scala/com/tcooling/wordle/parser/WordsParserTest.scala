@@ -7,8 +7,6 @@ import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseErro
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.matchers.should.Matchers
 
-import scala.util.{Failure, Success, Try}
-
 final class WordsParserTest extends AnyWordSpecLike with Matchers {
 
   private val filename: Filename = Filename.apply("someWordsFile.txt")
