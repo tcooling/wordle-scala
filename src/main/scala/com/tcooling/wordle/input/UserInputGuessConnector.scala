@@ -1,5 +1,13 @@
 package com.tcooling.wordle.input
 
-object UserInputGuessConnector extends GuessInputConnector {
-  override def getUserInput: String = scala.io.StdIn.readLine()
+import com.tcooling.wordle.model.UserInputGuess
+import cats.Monad
+import cats.effect.std.Console
+import cats.effect.syntax.all.*
+import cats.syntax.all.*
+
+object UserInputGuessConnector {
+  def apply[F[_] : Console : Monad](): GuessInputConnector[F] = new GuessInputConnector[F] {
+    override def getUserInput: F[UserInputGuess] = Console[F].readLine.map(UserInputGuess.apply)
+  }
 }

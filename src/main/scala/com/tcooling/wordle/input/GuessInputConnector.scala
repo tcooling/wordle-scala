@@ -1,12 +1,14 @@
 package com.tcooling.wordle.input
 
-trait GuessInputConnector {
+import com.tcooling.wordle.model.UserInputGuess
+
+trait GuessInputConnector[F[_]] {
 
   /**
    * Get the guess from the user
    * @return
    *   the user input guess
    */
-  def getUserInput: String
+  def getUserInput: F[UserInputGuess]
 
 }

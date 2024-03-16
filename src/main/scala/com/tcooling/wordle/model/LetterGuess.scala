@@ -7,8 +7,23 @@ import cats.Show
  * @param consoleColour
  *   the colour in which to print the guess letter when displaying the board
  */
-sealed trait LetterGuess(val consoleColour: String) {
+enum LetterGuess(val consoleColour: String) {
   val letter: Char
+
+  /**
+   * The given letter is not present anywhere in the target word
+   */
+  case Incorrect(letter: Char) extends LetterGuess(Console.RED)
+
+  /**
+   * The given letter is present in the target word but in a different position
+   */
+  case WrongPosition(letter: Char) extends LetterGuess(Console.YELLOW)
+
+  /**
+   * The given letter is in the correct position in the target word
+   */
+  case Correct(letter: Char) extends LetterGuess(Console.GREEN)
 }
 
 object LetterGuess {
@@ -19,20 +34,5 @@ object LetterGuess {
   implicit val showLetterGuess: Show[LetterGuess] = Show.show { letterGuess =>
     letterGuess.consoleColour + letterGuess.letter + Console.RESET
   }
-
-  /**
-   * The given letter is not present anywhere in the target word
-   */
-  final case class IncorrectGuess(letter: Char) extends LetterGuess(Console.RED)
-
-  /**
-   * The given letter is present in the target word but in a different position
-   */
-  final case class WrongPositionGuess(letter: Char) extends LetterGuess(Console.YELLOW)
-
-  /**
-   * The given letter is in the correct position in the target word
-   */
-  final case class CorrectGuess(letter: Char) extends LetterGuess(Console.GREEN)
 
 }

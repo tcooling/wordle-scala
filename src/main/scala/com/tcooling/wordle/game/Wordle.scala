@@ -1,6 +1,7 @@
 package com.tcooling.wordle.game
 
 import cats.data.NonEmptySet
+import cats.effect.ExitCode
 import com.tcooling.wordle.game.WordleFSM.State
 import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.{Exit, Start}
@@ -10,11 +11,32 @@ import com.tcooling.wordle.parser.{FileReader, WordsParser}
 
 import scala.annotation.tailrec
 
-final class Wordle(
+trait Wordle[F[_]] {
+  def startGame: F[ExitCode]
+}
+
+object Wordle {
+  def apply[F[_]](
+      config: WordleConfig,
+      fileReader: FileReader[F],
+      randomWord: NonEmptySet[String] => F[String],
+      guessConnector: GuessInputConnector[F]
+  ): Wordle[F] = new Wordle[F] {
+    override def startGame: F[ExitCode] = {
+
+      val linesR = fileReader.getLines(config.filename)
+      val aaa = linesR.attempt
+
+      ???
+    }
+  }
+}
+
+final class WordleOld[F[_]](
     config: WordleConfig,
-    fileReader: FileReader,
-    randomWord: NonEmptySet[String] => String,
-    guessConnector: GuessInputConnector
+    fileReader: FileReader[F],
+    randomWord: NonEmptySet[String] => F[String],
+    guessConnector: GuessInputConnector[F]
 ) {
 
   def startGame(): Unit =
@@ -31,7 +53,7 @@ final class Wordle(
       config: WordleConfig,
       targetWord: TargetWord,
       allWords: NonEmptySet[String],
-      guessConnector: GuessInputConnector
+      guessConnector: GuessInputConnector[F]
   ): Unit = {
     val nextStateF: (FSM, List[WordGuess]) => (FSM, List[WordGuess]) =
       WordleFSM.nextState(config, targetWord, allWords, guessConnector)(_, _)

@@ -6,8 +6,8 @@ import scala.annotation.tailrec
 
 object GameBoard {
 
-  val startSeparator: Char = '['
-  val endSeparator: Char   = ']'
+  val StartSeparator: Char = '['
+  val EndSeparator: Char   = ']'
 
   /**
    * Generate the game board and put each user guess on the board in the correct colour
@@ -15,7 +15,7 @@ object GameBoard {
   def generateGameBoard(wordLength: WordLength,
                         numberOfGuesses: NumberOfGuesses,
                         previousGuesses: List[WordGuess]): List[String] = {
-    val emptyRow = List.fill(wordLength.value)(s"$startSeparator $endSeparator")
+    val emptyRow = List.fill(wordLength.value)(s"$StartSeparator $EndSeparator")
 
     @tailrec
     def loop(previousGuesses: List[WordGuess], numberOfGuesses: Int, gameBoard: List[String]): List[String] =

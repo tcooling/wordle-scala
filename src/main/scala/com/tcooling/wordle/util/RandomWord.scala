@@ -1,14 +1,18 @@
 package com.tcooling.wordle.util
 
+import com.tcooling.wordle.model.TargetWord
+import cats.implicits._
 import cats.data.NonEmptySet
-
-import scala.util.Random
+import cats.effect.kernel.Sync
+import cats.effect.std.Random
 
 object RandomWord {
 
-  def chooseRandomWord(words: NonEmptySet[String]): String = {
-    val randomInteger = Random.nextInt(words.length)
-    words.toNonEmptyList.toList(randomInteger)
-  }
+  def chooseRandomWord[F[_] : Sync](words: NonEmptySet[String]): F[TargetWord] =
+    for {
+      random        <- Random.scalaUtilRandom[F]
+      randomInteger <- random.nextIntBounded(words.length)
+      word = words.toNonEmptyList.toList(randomInteger)
+    } yield TargetWord.apply(word)
 
 }

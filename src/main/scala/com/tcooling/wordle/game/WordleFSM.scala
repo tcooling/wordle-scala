@@ -1,15 +1,20 @@
 package com.tcooling.wordle.game
 
+import cats.{Applicative, Monad}
 import cats.data.NonEmptySet
+import cats.effect.std.Console
 import cats.implicits.toShow
+import cats.effect.syntax.all.*
+import cats.syntax.all.*
 import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.*
-import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
+import com.tcooling.wordle.model.LetterGuess.{Correct, Incorrect, WrongPosition}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
 import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, TargetWord, WordGuess, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.UserInputParser
 
-object WordleFSM {
+// TODO: double check cats implicits imports
+trait WordleFSM[F[_]] {
 
   /**
    * Each state of the FSM will return a new FSM state and the word guesses
@@ -19,98 +24,82 @@ object WordleFSM {
   /**
    * Given a current FSM state and a list of guesses, a new FSM state and updated list of guesses will be returned
    */
-  def nextState(
+  def nextState(state: FSM, guesses: List[WordGuess]): F[State]
+}
+
+object WordleFSM {
+  def apply[F[_] : Console : Applicative : Monad](
       config: WordleConfig,
-      targetWord: TargetWord,
+      guessConnector: GuessInputConnector[F],
       allWords: NonEmptySet[String],
-      guessConnector: GuessInputConnector
-  )(state: FSM, guesses: List[WordGuess]): State = state match {
-    case Start             => PrintHelp -> Nil
-    case PrintHelp         => printHelp(config)
-    case PrintGameBoard    => printGameBoard(guesses, config)
-    case CheckForWinOrLoss => checkForWinOrLoss(targetWord, config.numberOfGuesses, guesses)
-    case UserInputGuess    => userInputGuess(allWords, guessConnector, config.wordLength, targetWord, guesses)
-    case Win               => win(guesses)
-    case Lose              => lose(targetWord, guesses)
-    case Exit              => Exit      -> guesses
-  }
+      targetWord: TargetWord
+  ): WordleFSM[F] = new WordleFSM[F] {
 
-  private def printGameBoard(guesses: List[WordGuess], config: WordleConfig): State = {
-    val gameBoardRows = GameBoard.generateGameBoard(config.wordLength, config.numberOfGuesses, guesses)
-    println(gameBoardRows.mkString("\n"))
-    CheckForWinOrLoss -> guesses
-  }
+    // TODO: do I need to instantiate a new Console for every F?
+    private val console: Console[F] = Console[F]
 
-  private def win(guesses: List[WordGuess]): State = {
-    println(s"Well done! Number of guesses used: ${guesses.length}")
-    Exit -> guesses
-  }
-
-  private def lose(targetWord: TargetWord, guesses: List[WordGuess]): State = {
-    println(s"You failed to guess the word, the word was ${targetWord.value}")
-    Exit -> guesses
-  }
-
-  private def checkForWinOrLoss(targetWord: TargetWord,
-                                numberOfGuesses: NumberOfGuesses,
-                                guesses: List[WordGuess]): State =
-    if (guesses.lastOption.map(_.show).contains(targetWord.value)) Win -> guesses
-    else if (guesses.length == numberOfGuesses.value) Lose -> guesses
-    else UserInputGuess                                    -> guesses
-
-  private def userInputGuess(
-      allWords: NonEmptySet[String],
-      guessConnector: GuessInputConnector,
-      wordLength: WordLength,
-      targetWord: TargetWord,
-      guesses: List[WordGuess]
-  ): State = {
-    println("Guess: ")
-    val guess = guessConnector.getUserInput
-    val updatedGuesses = UserInputParser.parseGuess(allWords, guess, wordLength) match {
-      case Left(err) =>
-        println(err.show + "\nPlease try again.")
-        guesses
-      case Right(validUserInput) => guesses :+ WordGuess(validUserInput, targetWord)
+    override def nextState(state: FSM, guesses: List[WordGuess]): F[State] = state match {
+      case Start             => (PrintHelp -> Nil).pure
+      case PrintHelp         => printHelp
+      case PrintGameBoard    => printGameBoard(guesses)
+      case CheckForWinOrLoss => checkForWinOrLoss(guesses)
+      case UserInputGuess    => userInputGuess(guesses)
+      case Win               => win(guesses)
+      case Lose              => lose(guesses)
+      case Exit              => (Exit      -> guesses).pure
     }
-    PrintGameBoard -> updatedGuesses
-  }
 
-  private def printHelp(config: WordleConfig): State = {
-    val separator = List.fill(100)("-").mkString
-    println(separator)
-    println(s"Guess the WORDLE in ${config.numberOfGuesses} tries.")
-    println(s"Each guess must be a valid ${config.wordLength} letter word. Hit the enter button to submit.")
-    println("After each guess, the color of the tiles will change to show how close your guess was to the word.")
-    println("Examples")
-    println(
-      WordGuess(
-        List(
-          CorrectGuess('W'),
-          IncorrectGuess('E'),
-          IncorrectGuess('A'),
-          IncorrectGuess('R'),
-          IncorrectGuess('Y')
-        )
-      ).boardRow
-    )
-    println("The letter W is in the word and in the correct spot.")
-    println(
-      WordGuess(
-        List(
-          IncorrectGuess('P'),
-          WrongPositionGuess('I'),
-          IncorrectGuess('L'),
-          IncorrectGuess('L'),
-          IncorrectGuess('S')
-        )
-      ).boardRow
-    )
-    println("The letter I is in the word but in the wrong spot.")
-    println(WordGuess("VAGUE".map(IncorrectGuess.apply).toList).boardRow)
-    println("None of the letters are in the word in any spot.")
-    println(separator)
-    PrintGameBoard -> Nil
-  }
+    private def userInputGuess(guesses: List[WordGuess]): F[State] =
+      for {
+        _     <- console.println("Guess: ")
+        guess <- guessConnector.getUserInput // TODO: is console handling IO.delay etc?
+        updatedGuesses <- UserInputParser.parseGuess(allWords, guess, config.wordLength) match {
+          case Left(err) => List(err.show, "Please try again.").traverse(console.println).void *> guesses.pure
+          case Right(validUserInput) => (guesses :+ WordGuess(validUserInput, targetWord)).pure
+        }
+      } yield PrintGameBoard -> updatedGuesses
 
+    private def printGameBoard(guesses: List[WordGuess]): F[State] = {
+      val gameBoardRows = GameBoard.generateGameBoard(config.wordLength, config.numberOfGuesses, guesses)
+      gameBoardRows.traverse(console.println).void *>
+        (CheckForWinOrLoss -> guesses).pure
+    }
+
+    private def checkForWinOrLoss(guesses: List[WordGuess]): F[State] = {
+      val nextFsm =
+        if (guesses.lastOption.map(_.show).contains(targetWord.value)) Win
+        else if (guesses.length == config.numberOfGuesses.value) Lose
+        else UserInputGuess
+      (nextFsm -> guesses).pure
+    }
+
+    private def win(guesses: List[WordGuess]): F[State] =
+      console.println(s"Well done! Number of guesses used: ${guesses.length}") *>
+        (Exit -> guesses).pure
+
+    private def lose(guesses: List[WordGuess]): F[State] =
+      console.println(s"You failed to guess the word, the word was ${targetWord.value}") *>
+        (Exit -> guesses).pure
+
+    private def printHelp: F[State] = {
+      val separator = List.fill(100)("-").mkString
+      val linesToPrint = List(
+        separator,
+        s"Guess the WORDLE in ${config.numberOfGuesses.value} tries.",
+        s"Each guess must be a valid ${config.wordLength.value} letter word. Hit the enter button to submit.",
+        "After each guess, the color of the tiles will change to show how close your guess was to the word.",
+        "Examples",
+        WordGuess(List(Correct('W'), Incorrect('E'), Incorrect('A'), Incorrect('R'), Incorrect('Y'))).boardRow,
+        "The letter W is in the word and in the correct spot.",
+        WordGuess(List(Incorrect('P'), WrongPosition('I'), Incorrect('L'), Incorrect('L'), Incorrect('S'))).boardRow,
+        "The letter I is in the word but in the wrong spot.",
+        WordGuess("VAGUE".map(Incorrect.apply).toList).boardRow,
+        "None of the letters are in the word in any spot.",
+        separator
+      )
+
+      linesToPrint.traverse(console.println).void *> (PrintGameBoard -> Nil).pure
+    }
+
+  }
 }

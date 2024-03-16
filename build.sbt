@@ -15,6 +15,7 @@ lazy val wordleScala = Project(id = "wordle-scala", base = file("."))
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect"                   % "3.5.2",
+      "org.typelevel" %% "cats-effect-std"               % "3.5.2",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0",
       "org.scalatest" %% "scalatest"                     % "3.2.17" % Test
     )
