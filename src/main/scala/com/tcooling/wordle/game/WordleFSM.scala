@@ -4,7 +4,6 @@ import cats.{Applicative, Monad}
 import cats.data.NonEmptySet
 import cats.effect.std.Console
 import cats.implicits.toShow
-import cats.effect.syntax.all.*
 import cats.syntax.all.*
 import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.*

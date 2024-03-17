@@ -2,15 +2,8 @@ package com.tcooling.wordle
 
 import cats.effect._
 import cats.effect.IO
-import cats.effect.std.Console
-import cats.implicits._
-import cats.syntax.all._
-import cats.Monad
 import com.tcooling.wordle.game.Wordle
-import com.tcooling.wordle.input.UserInputGuessConnector
 import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleConfig}
-import com.tcooling.wordle.parser.WordsReader
-import com.tcooling.wordle.util.RandomWord
 
 // TODO: use * for imports
 // TODO: use live methods - hexagonal architecture
@@ -26,6 +19,6 @@ object Main extends IOApp {
     numberOfGuesses = numberOfGuesses
   )
 
-  override def run(args: List[String]): IO[ExitCode] = Wordle.live(config).startGame
+  override def run(args: List[String]): IO[ExitCode] = Wordle.live[IO](config).startGame
 
 }

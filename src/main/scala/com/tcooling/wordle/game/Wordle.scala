@@ -3,19 +3,15 @@ package com.tcooling.wordle.game
 import cats.{Monad, Parallel}
 import cats.data.NonEmptySet
 import cats.effect.kernel.Sync
-import cats.syntax.all.*
 import cats.implicits.*
 import cats.effect.std.Console
-import cats.effect.{ExitCode, Resource}
+import cats.effect.ExitCode
 import com.tcooling.wordle.game.WordleFSM.State
 import com.tcooling.wordle.input.{GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.FSM.{Exit, Start}
-import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 import com.tcooling.wordle.model.{FSM, TargetWord, WordGuess, WordleConfig, WordsParserError}
 import com.tcooling.wordle.parser.{FileReader, WordsParser}
 import com.tcooling.wordle.util.RandomWord
-
-import scala.annotation.tailrec
 
 trait Wordle[F[_]] {
   def startGame: F[ExitCode]
@@ -48,13 +44,13 @@ object Wordle {
     }
   }
 
-  def live[F[_] : Sync : Console](config: WordleConfig): Wordle[F] = {
+  def live[F[_] : Sync : Console : Parallel](config: WordleConfig): Wordle[F] = {
     val fileReader: FileReader[F]                   = FileReader.apply()
     val wordsParser: WordsParser[F]                 = WordsParser.live(config, fileReader)
     val guessInputConnector: GuessInputConnector[F] = UserInputGuessConnector.apply()
     val wordleFSM: WordleFSM[F]                     = WordleFSM.apply(config, guessInputConnector)
     val randomWord: RandomWord[F]                   = RandomWord.apply()
 
-    Wordle[F].apply(wordleConfig, wordsParser, wordleFSM, randomWord)
+    Wordle[F].apply(config, wordsParser, wordleFSM, randomWord)
   }
 }

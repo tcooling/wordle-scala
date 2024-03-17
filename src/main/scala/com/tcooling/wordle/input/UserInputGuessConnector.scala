@@ -3,7 +3,6 @@ package com.tcooling.wordle.input
 import com.tcooling.wordle.model.UserInputGuess
 import cats.Monad
 import cats.effect.std.Console
-import cats.effect.syntax.all.*
 import cats.syntax.all.*
 
 object UserInputGuessConnector {

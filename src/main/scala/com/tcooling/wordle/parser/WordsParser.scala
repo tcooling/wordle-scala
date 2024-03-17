@@ -1,16 +1,14 @@
 package com.tcooling.wordle.parser
 
 import cats.{Applicative, Monad, Parallel}
-import cats.effect.unsafe.implicits.global
-import cats.syntax.all.*
 import cats.implicits.*
 import cats.effect.*
 import cats.effect.std.Console
 import cats.syntax.all.*
-import cats.effect.{IO, Resource}
+import cats.effect.Resource
 import cats.data.{EitherT, NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.model.WordleConfig
-import com.tcooling.wordle.model.{Filename, WordLength, WordsParserError}
+import com.tcooling.wordle.model.{WordLength, WordsParserError}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 
 trait WordsParser[F[_]] {
@@ -18,7 +16,8 @@ trait WordsParser[F[_]] {
 }
 
 object WordsParser {
-  def apply[F[_] : Applicative : Monad : Parallel](config: WordleConfig, fileReader: FileReader[F]): WordsParser[F] =
+  def apply[F[_] : Applicative : Monad : Parallel : MonadCancelThrow](config: WordleConfig,
+                                                                      fileReader: FileReader[F]): WordsParser[F] =
     new WordsParser[F] {
       override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] = {
         // TODO: performance test if parTraverse is faster than not here
@@ -36,8 +35,7 @@ object WordsParser {
 
       private def parseLine(line: String): F[Option[String]] = {
         val validatedLine =
-          if (line.length == config.wordLength.value && WordRegex
-              .validate[Boolean](_, ifMatchesRegex = true, ifDoesNotMatchRegex = false)) {
+          if (line.length == config.wordLength.value && WordRegex.validate(line)) {
             Some(line.toUpperCase)
           } else {
             None
@@ -69,7 +67,10 @@ object WordsParser {
       }
     }
 
-  def live[F[_] : Monad](config: WordleConfig, fileReader: FileReader[F]): WordsParser[F] = {
+  def live[F[_] : Monad : Parallel : MonadCancelThrow : Console](
+      config: WordleConfig,
+      fileReader: FileReader[F]
+  ): WordsParser[F] = {
     val delegate = WordsParser.apply(config, fileReader)
     observed[F](config, delegate)
   }

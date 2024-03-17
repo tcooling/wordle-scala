@@ -3,8 +3,8 @@ package com.tcooling.wordle.model
 import cats.Show
 import cats.implicits.toShow
 import com.tcooling.wordle.model.{TargetWord, UserInputGuess}
-import com.tcooling.wordle.model.LetterGuess.{CorrectGuess, IncorrectGuess, WrongPositionGuess}
-import com.tcooling.wordle.game.GameBoard.{endSeparator, startSeparator}
+import com.tcooling.wordle.model.LetterGuess.{Correct, Incorrect, WrongPosition}
+import com.tcooling.wordle.game.GameBoard.{EndSeparator, StartSeparator}
 
 final case class WordGuess(letterGuesses: List[LetterGuess])
 
@@ -18,9 +18,9 @@ object WordGuess {
    */
   def apply(userInput: UserInputGuess, targetWord: TargetWord): WordGuess =
     WordGuess(userInput.value.zip(targetWord.value).toList.map {
-      case (letterGuess, target) if letterGuess == target             => CorrectGuess(letterGuess)
-      case (letterGuess, _) if targetWord.value.contains(letterGuess) => WrongPositionGuess(letterGuess)
-      case (letterGuess, _)                                           => IncorrectGuess(letterGuess)
+      case (letterGuess, target) if letterGuess == target             => Correct(letterGuess)
+      case (letterGuess, _) if targetWord.value.contains(letterGuess) => WrongPosition(letterGuess)
+      case (letterGuess, _)                                           => Incorrect(letterGuess)
     })
 }
 
@@ -32,6 +32,6 @@ extension (wordGuess: WordGuess) {
    * colour is the letter guess itself, which is between a start and end separator.
    */
   def boardRow: String = wordGuess.letterGuesses.map { letterGuess =>
-    s"$startSeparator${letterGuess.show}$endSeparator"
+    s"$StartSeparator${letterGuess.show}$EndSeparator"
   }.mkString
 }
