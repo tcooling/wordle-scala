@@ -9,7 +9,7 @@ import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleC
 object Main extends IOApp {
 
   private val config = WordleConfig(
-    filename = Filename("wordadsadasds.txt"),
+    filename = Filename("words.txt"),
     wordLength = WordLength(5),
     numberOfGuesses = NumberOfGuesses(6)
   )
