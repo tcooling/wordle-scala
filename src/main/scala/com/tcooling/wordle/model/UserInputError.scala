@@ -1,6 +1,6 @@
 package com.tcooling.wordle.model
 
-import cats.Show
+import com.tcooling.wordle.util.ShowWithColour
 
 enum UserInputError(val errorMessage: String) {
   case IncorrectLength(wordLength: Int) extends UserInputError(s"Guess length not equal to $wordLength")
@@ -9,10 +9,5 @@ enum UserInputError(val errorMessage: String) {
 }
 
 object UserInputError {
-
-  // TODO: make logic for reset + colour generic
-  implicit val showUserInputError: Show[UserInputError] = Show.show { error =>
-    Console.BLUE + error.errorMessage + Console.RESET
-  }
-
+  given ShowWithColour[UserInputError] = ShowWithColour.showWithColour(Console.BLUE, _.errorMessage)
 }

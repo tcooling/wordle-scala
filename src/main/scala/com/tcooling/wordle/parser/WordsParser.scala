@@ -4,7 +4,6 @@ import cats.{Applicative, Monad, Parallel}
 import cats.implicits.*
 import cats.effect.*
 import cats.effect.std.Console
-import cats.syntax.all.*
 import cats.effect.Resource
 import cats.data.{EitherT, NonEmptyList, NonEmptySet}
 import com.tcooling.wordle.util.Syntax.evalTap
@@ -45,7 +44,6 @@ object WordsParser {
       }
     }
 
-  // TODO: use reader t
   def observed[F[_] : Monad : Console](config: WordleConfig, delegate: WordsParser[F]): WordsParser[F] =
     new WordsParser[F] {
 

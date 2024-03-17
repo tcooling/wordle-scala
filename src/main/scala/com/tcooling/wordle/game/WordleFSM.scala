@@ -9,12 +9,11 @@ import cats.syntax.all.*
 import com.tcooling.wordle.input.{GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.LetterGuess.{Correct, Incorrect, WrongPosition}
-import com.tcooling.wordle.model.WordGuess.showWordGuess
 import com.tcooling.wordle.game.WordleFSM.State
-import com.tcooling.wordle.model.{boardRow, FSM, NumberOfGuesses, TargetWord, WordGuess, WordLength, WordleConfig}
+import com.tcooling.wordle.game.GameBoard.boardRow
+import com.tcooling.wordle.model.{FSM, NumberOfGuesses, TargetWord, WordGuess, WordLength, WordleConfig}
 import com.tcooling.wordle.parser.UserInputParser
 
-// TODO: double check cats implicits imports
 trait WordleFSM[F[_]] {
 
   /**
@@ -54,10 +53,10 @@ object WordleFSM {
                                targetWord: TargetWord.Type,
                                guesses: List[WordGuess]): F[State] =
       for {
-        _     <- Console[F].println("Guess: ")
+        _     <- Console[F].print("Guess: ")
         guess <- guessConnector.getUserInput
         updatedGuesses <- UserInputParser.parseGuess(allWords, guess, config.wordLength) match {
-          case Left(err) => List(err.show, "Please try again.").traverse(Console[F].println).void.as(guesses)
+          case Left(err) => List(err.showWithColour, "Please try again.").traverse(Console[F].println).void.as(guesses)
           case Right(validUserInput) => (guesses :+ WordGuess(validUserInput, targetWord)).pure
         }
       } yield PrintGameBoard -> updatedGuesses

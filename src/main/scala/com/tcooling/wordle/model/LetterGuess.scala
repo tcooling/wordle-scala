@@ -1,6 +1,8 @@
 package com.tcooling.wordle.model
 
 import cats.Show
+import cats.implicits.toShow
+import com.tcooling.wordle.util.ShowWithColour
 
 /**
  * For a particular letter in the users guess, encapsulate the result of the guess
@@ -27,12 +29,5 @@ enum LetterGuess(val consoleColour: String) {
 }
 
 object LetterGuess {
-
-  /**
-   * The console needs to be reset to prevent subsequent characters using the previously used colour.
-   */
-  implicit val showLetterGuess: Show[LetterGuess] = Show.show { letterGuess =>
-    letterGuess.consoleColour + letterGuess.letter + Console.RESET
-  }
-
+  given ShowWithColour[LetterGuess] = ShowWithColour.showWithColour(_.consoleColour, _.letter.show)
 }
