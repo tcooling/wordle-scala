@@ -46,15 +46,15 @@ object WordsParser {
       }
     }
 
-  // TODO: might need ReaderT here
+  // TODO: add file reader to live method and use reader t
   def observed[F[_] : Monad : Console](config: WordleConfig, delegate: WordsParser[F]): WordsParser[F] =
     new WordsParser[F] {
       override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] =
         delegate.parseWords().evalTap {
-          case Left(FileParseError) => Console[F].println("Error parsing words file.")
+          case Left(FileParseError) => Console[F].errorln("Error parsing words file.")
           case Left(InvalidWordsError) =>
-            Console[F].println("Error parsing words (possibly word length or special characters).")
-          case Left(EmptyFileError) => Console[F].println("Empty words file error")
+            Console[F].errorln("Error parsing words (possibly word length or special characters).")
+          case Left(EmptyFileError) => Console[F].errorln("Empty words file error")
           case Right(allWords) =>
             Console[F].println(
               s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength.value}")
@@ -69,9 +69,8 @@ object WordsParser {
       }
     }
 
-  // TODO: file reader in reader t?
-  def live[F[_] : Applicative : Parallel : Console](config: WordleConfig, fileReader: FileReader[F]): WordsParser[F] = {
-    val wordsParser = WordsParser.apply(config, fileReader)
-    observed(config, wordsParser)
+  def live[F[_] : Monad](config: WordleConfig, fileReader: FileReader[F]): WordsParser[F] = {
+    val delegate = WordsParser.apply(config, fileReader)
+    observed[F](config, delegate)
   }
 }

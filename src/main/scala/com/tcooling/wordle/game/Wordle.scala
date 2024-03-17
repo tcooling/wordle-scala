@@ -2,16 +2,18 @@ package com.tcooling.wordle.game
 
 import cats.{Monad, Parallel}
 import cats.data.NonEmptySet
+import cats.effect.kernel.Sync
 import cats.syntax.all.*
 import cats.implicits.*
 import cats.effect.std.Console
 import cats.effect.{ExitCode, Resource}
 import com.tcooling.wordle.game.WordleFSM.State
-import com.tcooling.wordle.input.GuessInputConnector
+import com.tcooling.wordle.input.{GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.FSM.{Exit, Start}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 import com.tcooling.wordle.model.{FSM, TargetWord, WordGuess, WordleConfig, WordsParserError}
 import com.tcooling.wordle.parser.{FileReader, WordsParser}
+import com.tcooling.wordle.util.RandomWord
 
 import scala.annotation.tailrec
 
@@ -19,75 +21,40 @@ trait Wordle[F[_]] {
   def startGame: F[ExitCode]
 }
 
+// TODO: cancellable? e.g. user presses ctrl + c
 object Wordle {
   def apply[F[_] : Monad : Parallel : Console](
       config: WordleConfig,
-      fileReader: FileReader[F],
-      randomWord: NonEmptySet[String] => F[String],
-      guessConnector: GuessInputConnector[F]
+      wordsParser: WordsParser[F],
+      wordleFSM: WordleFSM[F],
+      randomWord: RandomWord[F]
   ): Wordle[F] = new Wordle[F] {
 
-    override def startGame: F[ExitCode] = {
-
-      val linesR: Resource[F, List[String]] = fileReader.getLines(config.filename)
-      val aaa                               = linesR.use(x => parse(x))
-
-      // TODO: use observed method for logging in here?
-      val parser = WordsParser.apply[F](config, fileReader)
-      parser.parseWords() map {
-        case Left(err)    =>
-        case Right(lines) =>
+    override def startGame: F[ExitCode] =
+      wordsParser.parseWords().flatMap {
+        case Left(_)      => ExitCode.Error.pure
+        case Right(words) => randomWord.chooseRandomWord(words).flatMap(gameLoop(words, _)).as(ExitCode.Success)
       }
 
-      ???
+    private def gameLoop(allWords: NonEmptySet[String], targetWord: TargetWord): F[State] = {
+      val wordleFSMNextState = wordleFSM.nextState(allWords, targetWord)
+
+      def loop(state: FSM, guesses: List[WordGuess]): F[State] = state match {
+        case Exit => (Exit -> guesses).pure
+        case _    => wordleFSMNextState(state, guesses).flatMap(loop.tupled)
+      }
+
+      loop(state = Start, guesses = List.empty[WordGuess])
     }
   }
 
-  private def parse(words: List[String]): F[List[String]] = ???
-}
+  def live[F[_] : Sync : Console](config: WordleConfig): Wordle[F] = {
+    val fileReader: FileReader[F]                   = FileReader.apply()
+    val wordsParser: WordsParser[F]                 = WordsParser.live(config, fileReader)
+    val guessInputConnector: GuessInputConnector[F] = UserInputGuessConnector.apply()
+    val wordleFSM: WordleFSM[F]                     = WordleFSM.apply(config, guessInputConnector)
+    val randomWord: RandomWord[F]                   = RandomWord.apply()
 
-final class WordleOld[F[_]](
-    config: WordleConfig,
-    fileReader: FileReader[F],
-    randomWord: NonEmptySet[String] => F[String],
-    guessConnector: GuessInputConnector[F]
-) {
-
-  def startGame(): Unit =
-    WordsParser.apply(config.filename, config.wordLength, fileReader).parseWords match {
-      case Left(error) => printError(error)
-      case Right(allWords) =>
-        println(
-          s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength.value}")
-        val targetWord = TargetWord.apply(randomWord(allWords))
-        gameLoop(config, targetWord, allWords, guessConnector)
-    }
-
-  private def gameLoop(
-      config: WordleConfig,
-      targetWord: TargetWord,
-      allWords: NonEmptySet[String],
-      guessConnector: GuessInputConnector[F]
-  ): Unit = {
-    val nextStateF: (FSM, List[WordGuess]) => (FSM, List[WordGuess]) =
-      WordleFSM.nextState(config, targetWord, allWords, guessConnector)(_, _)
-
-    @tailrec
-    def loop(state: FSM, guesses: List[WordGuess]): State = state match {
-      case Exit => Exit -> guesses
-      case _ =>
-        val (nextState, updatedGuesses) = nextStateF(state, guesses)
-        loop(nextState, updatedGuesses)
-    }
-
-    loop(state = Start, guesses = Nil)
+    Wordle[F].apply(wordleConfig, wordsParser, wordleFSM, randomWord)
   }
-
-  // TODO: use Concolse.errorLine here
-  private def printError(error: WordsParserError): Unit = error match {
-    case FileParseError    => println("Error parsing words file")
-    case InvalidWordsError => println("Error parsing words (possibly word length or special characters)")
-    case EmptyFileError    => println("Empty words file error")
-  }
-
 }

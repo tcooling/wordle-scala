@@ -26,9 +26,6 @@ object Main extends IOApp {
     numberOfGuesses = numberOfGuesses
   )
 
-  override def run(args: List[String]): IO[ExitCode] =
-    ???
-
-  Wordle(config, WordsReader, RandomWord.chooseRandomWord, UserInputGuessConnector.apply[IO]()).startGame()
+  override def run(args: List[String]): IO[ExitCode] = Wordle.live(config).startGame
 
 }
