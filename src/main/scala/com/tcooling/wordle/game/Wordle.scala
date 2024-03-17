@@ -7,7 +7,6 @@ import cats.implicits.*
 import cats.effect.std.Console
 import cats.effect.ExitCode
 import com.tcooling.wordle.game.WordleFSM.State
-import com.tcooling.wordle.input.{GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.FSM.{Exit, Start}
 import com.tcooling.wordle.model.{FSM, TargetWord, WordGuess, WordleConfig, WordsParserError}
 import com.tcooling.wordle.parser.{FileReader, WordsParser}
@@ -37,7 +36,7 @@ object Wordle {
       }
 
     // TODO: handle ctrl + c from inside loop, currently program does not exit elegantly
-    private def gameLoop(allWords: NonEmptySet[String], targetWord: TargetWord): F[State] = {
+    private def gameLoop(allWords: NonEmptySet[String], targetWord: TargetWord.Type): F[State] = {
       val wordleFSMNextState = wordleFSM.nextState(allWords, targetWord)
 
       def loop(state: FSM, guesses: List[WordGuess]): F[State] = state match {
@@ -50,11 +49,10 @@ object Wordle {
   }
 
   def live[F[_] : Sync : Console : Parallel](config: WordleConfig): Wordle[F] = {
-    val fileReader: FileReader[F]                   = FileReader.apply()
-    val wordsParser: WordsParser[F]                 = WordsParser.live(config, fileReader)
-    val guessInputConnector: GuessInputConnector[F] = UserInputGuessConnector.apply()
-    val wordleFSM: WordleFSM[F]                     = WordleFSM.apply(config, guessInputConnector)
-    val randomWord: RandomWord[F]                   = RandomWord.apply()
+    val fileReader: FileReader[F]   = FileReader.apply()
+    val wordsParser: WordsParser[F] = WordsParser.live(config, fileReader)
+    val wordleFSM: WordleFSM[F]     = WordleFSM.live(config)
+    val randomWord: RandomWord[F]   = RandomWord.apply()
 
     Wordle[F].apply(config, wordsParser, wordleFSM, randomWord)
   }

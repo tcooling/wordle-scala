@@ -2,10 +2,11 @@ package com.tcooling.wordle.game
 
 import cats.{Applicative, Monad}
 import cats.data.NonEmptySet
+import cats.effect.kernel.Sync
 import cats.effect.std.Console
 import cats.implicits.toShow
 import cats.syntax.all.*
-import com.tcooling.wordle.input.GuessInputConnector
+import com.tcooling.wordle.input.{GuessInputConnector, UserInputGuessConnector}
 import com.tcooling.wordle.model.FSM.*
 import com.tcooling.wordle.model.LetterGuess.{Correct, Incorrect, WrongPosition}
 import com.tcooling.wordle.model.WordGuess.showWordGuess
@@ -21,7 +22,8 @@ trait WordleFSM[F[_]] {
    * would prefer not to curry in allWords and targetWord here, but have to given how the live methods work, e.g. do not
    * want to run parseWords logic in live method?
    */
-  def nextState(allWords: NonEmptySet[String], targetWord: TargetWord)(state: FSM, guesses: List[WordGuess]): F[State]
+  def nextState(allWords: NonEmptySet[String], targetWord: TargetWord.Type)(state: FSM,
+                                                                            guesses: List[WordGuess]): F[State]
 }
 
 object WordleFSM {
@@ -37,7 +39,7 @@ object WordleFSM {
   ): WordleFSM[F] = new WordleFSM[F] {
 
     override def nextState(allWords: NonEmptySet[String],
-                           targetWord: TargetWord)(state: FSM, guesses: List[WordGuess]): F[State] = state match {
+                           targetWord: TargetWord.Type)(state: FSM, guesses: List[WordGuess]): F[State] = state match {
       case Start             => (PrintHelp -> Nil).pure
       case PrintHelp         => printHelp
       case PrintGameBoard    => printGameBoard(guesses)
@@ -49,11 +51,11 @@ object WordleFSM {
     }
 
     private def userInputGuess(allWords: NonEmptySet[String],
-                               targetWord: TargetWord,
+                               targetWord: TargetWord.Type,
                                guesses: List[WordGuess]): F[State] =
       for {
         _     <- Console[F].println("Guess: ")
-        guess <- guessConnector.getUserInput // TODO: is console handling IO.delay etc?
+        guess <- guessConnector.getUserInput
         updatedGuesses <- UserInputParser.parseGuess(allWords, guess, config.wordLength) match {
           case Left(err) => List(err.show, "Please try again.").traverse(Console[F].println).void.as(guesses)
           case Right(validUserInput) => (guesses :+ WordGuess(validUserInput, targetWord)).pure
@@ -67,7 +69,7 @@ object WordleFSM {
         .void
         .as(CheckForWinOrLoss -> guesses)
 
-    private def checkForWinOrLoss(targetWord: TargetWord, guesses: List[WordGuess]): F[State] = {
+    private def checkForWinOrLoss(targetWord: TargetWord.Type, guesses: List[WordGuess]): F[State] = {
       val nextFsm =
         if (guesses.lastOption.map(_.show).contains(targetWord.value)) Win
         else if (guesses.length == config.numberOfGuesses.value) Lose
@@ -78,7 +80,7 @@ object WordleFSM {
     private def win(guesses: List[WordGuess]): F[State] =
       Console[F].println(s"Well done! Number of guesses used: ${guesses.length}").as(Exit -> guesses)
 
-    private def lose(targetWord: TargetWord, guesses: List[WordGuess]): F[State] =
+    private def lose(targetWord: TargetWord.Type, guesses: List[WordGuess]): F[State] =
       Console[F].println(s"You failed to guess the word, the word was ${targetWord.value}").as(Exit -> guesses)
 
     private def printHelp: F[State] = {
@@ -101,5 +103,10 @@ object WordleFSM {
       linesToPrint.traverse(Console[F].println).void.as(PrintGameBoard -> Nil)
     }
 
+  }
+
+  def live[F[_] : Console : Applicative : Monad : Sync](config: WordleConfig): WordleFSM[F] = {
+    val guessInputConnector: GuessInputConnector[F] = UserInputGuessConnector.apply()
+    WordleFSM.apply(config, guessInputConnector)
   }
 }

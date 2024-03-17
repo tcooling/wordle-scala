@@ -8,9 +8,9 @@ import cats.syntax.all.*
 
 object UserInputGuessConnector {
   def apply[F[_] : Console : Monad : Sync](): GuessInputConnector[F] = new GuessInputConnector[F] {
-    override def getUserInput: F[UserInputGuess] =
+    override def getUserInput: F[UserInputGuess.Type] =
       Sync[F]
         .defer(Console[F].readLine)
-        .map(UserInputGuess.apply)
+        .map(UserInputGuess(_))
   }
 }

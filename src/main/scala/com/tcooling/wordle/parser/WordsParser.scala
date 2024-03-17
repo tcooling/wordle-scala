@@ -7,6 +7,7 @@ import cats.effect.std.Console
 import cats.syntax.all.*
 import cats.effect.Resource
 import cats.data.{EitherT, NonEmptyList, NonEmptySet}
+import com.tcooling.wordle.util.Syntax.evalTap
 import com.tcooling.wordle.model.WordleConfig
 import com.tcooling.wordle.model.{WordLength, WordsParserError}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
@@ -44,9 +45,12 @@ object WordsParser {
       }
     }
 
-  // TODO: add file reader to live method and use reader t
+  // TODO: use reader t
   def observed[F[_] : Monad : Console](config: WordleConfig, delegate: WordsParser[F]): WordsParser[F] =
     new WordsParser[F] {
+
+      import config.{filename, wordLength}
+
       override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] =
         delegate.parseWords().evalTap {
           case Left(FileParseError) => Console[F].errorln("Error parsing words file.")
@@ -55,16 +59,8 @@ object WordsParser {
           case Left(EmptyFileError) => Console[F].errorln("Empty words file error")
           case Right(allWords) =>
             Console[F].println(
-              s"Successfully parsed ${config.filename}, read ${allWords.length} words of length ${config.wordLength.value}")
+              s"Successfully parsed ${filename}, read ${allWords.length} words of length ${wordLength.value}")
         }
-
-      // TODO: trying to recreate fs2 evalTap, must exist already?
-      // TODO: move to util
-      extension [F[_] : Monad, T](valueF: F[T]) {
-        def evalTap(f: T => F[Unit]): F[T] = valueF.flatMap { value =>
-          f(value).as(value)
-        }
-      }
     }
 
   def live[F[_] : Applicative : MonadCancelThrow : Parallel : Console](

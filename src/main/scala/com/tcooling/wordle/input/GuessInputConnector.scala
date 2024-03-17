@@ -9,6 +9,6 @@ trait GuessInputConnector[F[_]] {
    * @return
    *   the user input guess
    */
-  def getUserInput: F[UserInputGuess]
+  def getUserInput: F[UserInputGuess.Type]
 
 }

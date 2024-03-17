@@ -8,7 +8,7 @@ object WordRegex {
   private val NoSpecialCharsWord: Regex = "([a-zA-Z])*".r
 
   /**
-   * Validate a given input word against the regex, returning a user specified type T if the word is valid or not
+   * Validate a given input word against the regex, returning true if it matches
    */
   def validate(word: String): Boolean = word match {
     case NoSpecialCharsWord(_) => true

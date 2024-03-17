@@ -8,14 +8,10 @@ import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleC
 // TODO: use live methods - hexagonal architecture
 object Main extends IOApp {
 
-  private val filename: Filename               = Filename.apply("words.txt")
-  private val wordLength: WordLength           = WordLength.apply(5)
-  private val numberOfGuesses: NumberOfGuesses = NumberOfGuesses.apply(6)
-
   private val config = WordleConfig(
-    filename = filename,
-    wordLength = wordLength,
-    numberOfGuesses = numberOfGuesses
+    filename = Filename("wordadsadasds.txt"),
+    wordLength = WordLength(5),
+    numberOfGuesses = NumberOfGuesses(6)
   )
 
   override def run(args: List[String]): IO[ExitCode] = Wordle.live[IO](config).startGame

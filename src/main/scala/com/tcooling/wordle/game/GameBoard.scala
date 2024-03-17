@@ -12,8 +12,8 @@ object GameBoard {
   /**
    * Generate the game board and put each user guess on the board in the correct colour
    */
-  def generateGameBoard(wordLength: WordLength,
-                        numberOfGuesses: NumberOfGuesses,
+  def generateGameBoard(wordLength: WordLength.Type,
+                        numberOfGuesses: NumberOfGuesses.Type,
                         previousGuesses: List[WordGuess]): List[String] = {
     val emptyRow = List.fill(wordLength.value)(s"$StartSeparator $EndSeparator")
 
