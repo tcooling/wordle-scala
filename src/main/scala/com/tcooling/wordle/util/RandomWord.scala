@@ -10,9 +10,9 @@ object RandomWord {
 
   def chooseRandomWord[F[_] : Sync](words: NonEmptySet[String]): F[TargetWord] =
     for {
-      random        <- Random.scalaUtilRandom[F]
-      randomInteger <- random.nextIntBounded(words.length)
-      word = words.toNonEmptyList.toList(randomInteger)
+      random          <- Random.scalaUtilRandom[F]
+      randomWordIndex <- random.nextIntBounded(words.length)
+      word = words.toNonEmptyList.toList(randomWordIndex)
     } yield TargetWord.apply(word)
 
 }

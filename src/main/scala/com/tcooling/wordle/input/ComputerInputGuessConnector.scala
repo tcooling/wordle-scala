@@ -7,10 +7,6 @@ import cats.syntax.all.*
 
 object ComputerInputGuessConnector {
   def apply[F[_] : Applicative](): GuessInputConnector[F] = new GuessInputConnector[F] {
-
-    /**
-     * When implementing, will need to pass the word set and config to this class
-     */
     override def getUserInput: F[UserInputGuess] = UserInputGuess("TODO").pure
   }
 

@@ -35,9 +35,6 @@ object WordleFSM {
       targetWord: TargetWord
   ): WordleFSM[F] = new WordleFSM[F] {
 
-    // TODO: do I need to instantiate a new Console for every F?
-    private val console: Console[F] = Console[F]
-
     override def nextState(state: FSM, guesses: List[WordGuess]): F[State] = state match {
       case Start             => (PrintHelp -> Nil).pure
       case PrintHelp         => printHelp
@@ -51,19 +48,20 @@ object WordleFSM {
 
     private def userInputGuess(guesses: List[WordGuess]): F[State] =
       for {
-        _     <- console.println("Guess: ")
+        _     <- Console[F].println("Guess: ")
         guess <- guessConnector.getUserInput // TODO: is console handling IO.delay etc?
         updatedGuesses <- UserInputParser.parseGuess(allWords, guess, config.wordLength) match {
-          case Left(err) => List(err.show, "Please try again.").traverse(console.println).void *> guesses.pure
+          case Left(err) => List(err.show, "Please try again.").traverse(Console[F].println).void.as(guesses)
           case Right(validUserInput) => (guesses :+ WordGuess(validUserInput, targetWord)).pure
         }
       } yield PrintGameBoard -> updatedGuesses
 
-    private def printGameBoard(guesses: List[WordGuess]): F[State] = {
-      val gameBoardRows = GameBoard.generateGameBoard(config.wordLength, config.numberOfGuesses, guesses)
-      gameBoardRows.traverse(console.println).void *>
-        (CheckForWinOrLoss -> guesses).pure
-    }
+    private def printGameBoard(guesses: List[WordGuess]): F[State] =
+      GameBoard
+        .generateGameBoard(config.wordLength, config.numberOfGuesses, guesses)
+        .traverse(Console[F].println)
+        .void
+        .as(CheckForWinOrLoss -> guesses)
 
     private def checkForWinOrLoss(guesses: List[WordGuess]): F[State] = {
       val nextFsm =
@@ -74,12 +72,10 @@ object WordleFSM {
     }
 
     private def win(guesses: List[WordGuess]): F[State] =
-      console.println(s"Well done! Number of guesses used: ${guesses.length}") *>
-        (Exit -> guesses).pure
+      Console[F].println(s"Well done! Number of guesses used: ${guesses.length}").as(Exit -> guesses)
 
     private def lose(guesses: List[WordGuess]): F[State] =
-      console.println(s"You failed to guess the word, the word was ${targetWord.value}") *>
-        (Exit -> guesses).pure
+      Console[F].println(s"You failed to guess the word, the word was ${targetWord.value}").as(Exit -> guesses)
 
     private def printHelp: F[State] = {
       val separator = List.fill(100)("-").mkString
@@ -98,7 +94,7 @@ object WordleFSM {
         separator
       )
 
-      linesToPrint.traverse(console.println).void *> (PrintGameBoard -> Nil).pure
+      linesToPrint.traverse(Console[F].println).void.as(PrintGameBoard -> Nil)
     }
 
   }

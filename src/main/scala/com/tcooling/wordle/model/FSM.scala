@@ -5,5 +5,12 @@ package com.tcooling.wordle.model
  * will always be Exit.
  */
 enum FSM {
-  case Start, PrintHelp, PrintGameBoard, CheckForWinOrLoss, UserInputGuess, Win, Lose, Exit
+  case Start
+  case PrintHelp
+  case PrintGameBoard
+  case CheckForWinOrLoss
+  case UserInputGuess
+  case Win
+  case Lose
+  case Exit
 }

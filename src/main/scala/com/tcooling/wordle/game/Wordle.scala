@@ -1,9 +1,10 @@
 package com.tcooling.wordle.game
 
-import cats.Monad
+import cats.{Monad, Parallel}
 import cats.data.NonEmptySet
 import cats.syntax.all.*
-import cats.implicits._
+import cats.implicits.*
+import cats.effect.std.Console
 import cats.effect.{ExitCode, Resource}
 import com.tcooling.wordle.game.WordleFSM.State
 import com.tcooling.wordle.input.GuessInputConnector
@@ -19,21 +20,29 @@ trait Wordle[F[_]] {
 }
 
 object Wordle {
-  def apply[F[_] : Monad](
+  def apply[F[_] : Monad : Parallel : Console](
       config: WordleConfig,
       fileReader: FileReader[F],
       randomWord: NonEmptySet[String] => F[String],
       guessConnector: GuessInputConnector[F]
   ): Wordle[F] = new Wordle[F] {
+
     override def startGame: F[ExitCode] = {
 
       val linesR: Resource[F, List[String]] = fileReader.getLines(config.filename)
-      val aaa = linesR.use(x => parse(x))
+      val aaa                               = linesR.use(x => parse(x))
+
+      // TODO: use observed method for logging in here?
+      val parser = WordsParser.apply[F](config, fileReader)
+      parser.parseWords() map {
+        case Left(err)    =>
+        case Right(lines) =>
+      }
 
       ???
     }
   }
-  
+
   private def parse(words: List[String]): F[List[String]] = ???
 }
 
@@ -74,6 +83,7 @@ final class WordleOld[F[_]](
     loop(state = Start, guesses = Nil)
   }
 
+  // TODO: use Concolse.errorLine here
   private def printError(error: WordsParserError): Unit = error match {
     case FileParseError    => println("Error parsing words file")
     case InvalidWordsError => println("Error parsing words (possibly word length or special characters)")

@@ -8,6 +8,7 @@ import cats.syntax.all.*
 
 object UserInputGuessConnector {
   def apply[F[_] : Console : Monad](): GuessInputConnector[F] = new GuessInputConnector[F] {
+    // TODO: do I need a Sync[F].blocking?
     override def getUserInput: F[UserInputGuess] = Console[F].readLine.map(UserInputGuess.apply)
   }
 }
