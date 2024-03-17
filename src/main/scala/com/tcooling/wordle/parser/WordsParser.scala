@@ -1,27 +1,51 @@
 package com.tcooling.wordle.parser
 
+import cats.{Applicative, Monad}
 import cats.effect.unsafe.implicits.global
 import cats.syntax.all.*
-import cats.effect.IO
-import cats.data.{NonEmptyList, NonEmptySet}
+import cats.implicits.*
+import cats.effect.*
+import cats.syntax.all.*
+import cats.effect.{IO, Resource}
+import cats.data.{EitherT, NonEmptyList, NonEmptySet}
+import com.tcooling.wordle.model.WordleConfig
 import com.tcooling.wordle.model.{Filename, WordLength, WordsParserError}
 import com.tcooling.wordle.model.WordsParserError.{EmptyFileError, FileParseError, InvalidWordsError}
 
-final class WordsParser(filename: Filename, wordLength: WordLength, fileReader: FileReader) {
+trait WordsParser[F[_]] {
+  def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]]
+}
 
-  def parseWords: Either[WordsParserError, NonEmptySet[String]] = for {
-    words         <- fileReader.getLines(filename).use(IO.pure).attempt.unsafeRunSync().leftMap(_ => FileParseError)
-    nonEmptyWords <- NonEmptyList.fromList(words).map(_.toNes).toRight(EmptyFileError)
-    wordsOfCorrectLength     <- filterIncorrectLength(nonEmptyWords)
-    wordsWithoutSpecialChars <- filterNonLetterChars(wordsOfCorrectLength)
-  } yield wordsWithoutSpecialChars.map(_.toUpperCase)
+object WordsParser {
+  def apply[F[_] : Applicative : Monad : Async](fileReader: FileReader[F], config: WordleConfig): WordsParser[F] =
+    new WordsParser[F] {
+      override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] = {
 
-  private def filterIncorrectLength(words: NonEmptySet[String]): Either[WordsParserError, NonEmptySet[String]] =
-    NonEmptySet.fromSet(words.filter(_.length == wordLength.value)).toRight(InvalidWordsError)
+        val fileReaderR: Resource[F, List[String]] = fileReader.getLines(config.filename)
 
-  private def filterNonLetterChars(words: NonEmptySet[String]): Either[WordsParserError, NonEmptySet[String]] =
-    NonEmptySet
-      .fromSet(words.filter(WordRegex.validate[Boolean](_, ifMatchesRegex = true, ifDoesNotMatchRegex = false)))
-      .toRight(InvalidWordsError)
+        // TODO: performance test if parTraverse is faster than not here
+        val xyz = {
+          for {
+            lines         <- EitherT(fileReaderR.use(_.pure).attempt.map(_.leftMap(_ => FileParseError)))
+            nonEmptyLines <- EitherT.fromEither(NonEmptyList.fromList(lines).map(_.toNes).toRight(EmptyFileError))
+            validatedLines <- EitherT(
+              nonEmptyLines.toSortedSet.toList
+                .parTraverse(parseLine)
+                .map(maybeValidLines =>
+                  NonEmptyList.fromList(maybeValidLines.flatten).map(_.toNes).toRight(InvalidWordsError)))
+          } yield validatedLines
+        }.value
+      }
 
+      private def parseLine(line: String): F[Option[String]] = {
+        val validatedLine =
+          if (line.length == config.wordLength.value && WordRegex
+              .validate[Boolean](_, ifMatchesRegex = true, ifDoesNotMatchRegex = false)) {
+            Some(line.toUpperCase)
+          } else {
+            None
+          }
+        validatedLine.pure
+      }
+    }
 }

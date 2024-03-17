@@ -12,6 +12,7 @@ import com.tcooling.wordle.model.{Filename, NumberOfGuesses, WordLength, WordleC
 import com.tcooling.wordle.parser.WordsReader
 import com.tcooling.wordle.util.RandomWord
 
+// TODO: use * for imports
 // TODO: use live methods - hexagonal architecture
 object Main extends IOApp {
 

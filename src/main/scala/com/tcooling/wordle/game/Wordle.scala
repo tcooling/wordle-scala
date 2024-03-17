@@ -1,7 +1,10 @@
 package com.tcooling.wordle.game
 
+import cats.Monad
 import cats.data.NonEmptySet
-import cats.effect.ExitCode
+import cats.syntax.all.*
+import cats.implicits._
+import cats.effect.{ExitCode, Resource}
 import com.tcooling.wordle.game.WordleFSM.State
 import com.tcooling.wordle.input.GuessInputConnector
 import com.tcooling.wordle.model.FSM.{Exit, Start}
@@ -16,7 +19,7 @@ trait Wordle[F[_]] {
 }
 
 object Wordle {
-  def apply[F[_]](
+  def apply[F[_] : Monad](
       config: WordleConfig,
       fileReader: FileReader[F],
       randomWord: NonEmptySet[String] => F[String],
@@ -24,12 +27,14 @@ object Wordle {
   ): Wordle[F] = new Wordle[F] {
     override def startGame: F[ExitCode] = {
 
-      val linesR = fileReader.getLines(config.filename)
-      val aaa = linesR.attempt
+      val linesR: Resource[F, List[String]] = fileReader.getLines(config.filename)
+      val aaa = linesR.use(x => parse(x))
 
       ???
     }
   }
+  
+  private def parse(words: List[String]): F[List[String]] = ???
 }
 
 final class WordleOld[F[_]](
