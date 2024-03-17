@@ -14,7 +14,6 @@ object Main extends IOApp {
     numberOfGuesses = NumberOfGuesses(6)
   )
 
-  override def run(args: List[String]): IO[ExitCode] =
-    Wordle.live[IO].apply(config).flatMap(_.startGame)
+  override def run(args: List[String]): IO[ExitCode] = Wordle.live[IO](config).startGame
 
 }

@@ -1,7 +1,6 @@
 package com.tcooling.wordle.game
 
 import cats.{Applicative, Monad, Parallel}
-import cats.data.ReaderT
 import cats.data.NonEmptySet
 import cats.effect.kernel.Sync
 import cats.implicits.*
@@ -49,14 +48,12 @@ object Wordle {
     }
   }
 
-  def live[F[_] : Sync : Console : Parallel]: ReaderT[F, WordleConfig, Wordle[F]] =
-    ReaderT { config =>
-      val fileReader: FileReader[F] = FileReader.apply()
-      val wordsParserF              = WordsParser.live(fileReader).apply(config)
-      val wordleFSM: WordleFSM[F]   = WordleFSM.live(config)
-      val randomWord: RandomWord[F] = RandomWord.apply()
-      wordsParserF.map { wordsParser =>
-        Wordle[F].apply(config, wordsParser, wordleFSM, randomWord)
-      }
-    }
+  def live[F[_] : Sync : Console : Parallel](config: WordleConfig): Wordle[F] = {
+    val fileReader: FileReader[F]   = FileReader.apply()
+    val wordsParser: WordsParser[F] = WordsParser.live(config, fileReader)
+    val wordleFSM: WordleFSM[F]     = WordleFSM.live(config)
+    val randomWord: RandomWord[F]   = RandomWord.apply()
+
+    Wordle[F].apply(config, wordsParser, wordleFSM, randomWord)
+  }
 }
