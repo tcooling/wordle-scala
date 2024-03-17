@@ -16,8 +16,8 @@ trait WordsParser[F[_]] {
 }
 
 object WordsParser {
-  def apply[F[_] : Applicative : Monad : Parallel : MonadCancelThrow](config: WordleConfig,
-                                                                      fileReader: FileReader[F]): WordsParser[F] =
+  def apply[F[_] : Applicative : MonadCancelThrow : Parallel](config: WordleConfig,
+                                                              fileReader: FileReader[F]): WordsParser[F] =
     new WordsParser[F] {
       override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] = {
         // TODO: performance test if parTraverse is faster than not here
@@ -67,7 +67,7 @@ object WordsParser {
       }
     }
 
-  def live[F[_] : Monad : Parallel : MonadCancelThrow : Console](
+  def live[F[_] : Applicative : MonadCancelThrow : Parallel : Console](
       config: WordleConfig,
       fileReader: FileReader[F]
   ): WordsParser[F] = {

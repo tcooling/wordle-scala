@@ -22,6 +22,7 @@ lazy val wordleScala = Project(id = "wordle-scala", base = file("."))
   )
 
 lazy val defaultSettings = Seq(
+  Compile / run / fork := false,
   Test / parallelExecution := false,
   Test / fork := true,
   scalafmtOnCompile := true,

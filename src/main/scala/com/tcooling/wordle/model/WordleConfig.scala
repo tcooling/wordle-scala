@@ -6,6 +6,7 @@ final case class WordleConfig(
     numberOfGuesses: NumberOfGuesses
 )
 
+// TODO: https://contributors.scala-lang.org/t/improve-opaque-types/4786/11
 opaque type Filename = String
 
 object Filename {

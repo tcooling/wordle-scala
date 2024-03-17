@@ -1,6 +1,6 @@
 package com.tcooling.wordle.game
 
-import cats.{Monad, Parallel}
+import cats.{Applicative, Monad, Parallel}
 import cats.data.NonEmptySet
 import cats.effect.kernel.Sync
 import cats.implicits.*
@@ -19,7 +19,7 @@ trait Wordle[F[_]] {
 
 // TODO: cancellable? e.g. user presses ctrl + c
 object Wordle {
-  def apply[F[_] : Monad : Parallel : Console](
+  def apply[F[_] : Applicative : Monad](
       config: WordleConfig,
       wordsParser: WordsParser[F],
       wordleFSM: WordleFSM[F],
@@ -28,10 +28,15 @@ object Wordle {
 
     override def startGame: F[ExitCode] =
       wordsParser.parseWords().flatMap {
-        case Left(_)      => ExitCode.Error.pure
-        case Right(words) => randomWord.chooseRandomWord(words).flatMap(gameLoop(words, _)).as(ExitCode.Success)
+        case Left(_) => ExitCode.Error.pure
+        case Right(words) =>
+          randomWord
+            .chooseRandomWord(words)
+            .flatMap(gameLoop(words, _))
+            .as(ExitCode.Success)
       }
 
+    // TODO: handle ctrl + c from inside loop, currently program does not exit elegantly
     private def gameLoop(allWords: NonEmptySet[String], targetWord: TargetWord): F[State] = {
       val wordleFSMNextState = wordleFSM.nextState(allWords, targetWord)
 

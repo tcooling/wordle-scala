@@ -1,7 +1,7 @@
 package com.tcooling.wordle.util
 
 import com.tcooling.wordle.model.TargetWord
-import cats.implicits._
+import cats.implicits.*
 import cats.data.NonEmptySet
 import cats.effect.kernel.Sync
 import cats.effect.std.Random
