@@ -4,9 +4,8 @@ import cats.{Applicative, Monad, Parallel}
 import cats.implicits.*
 import cats.effect.*
 import cats.effect.std.Console
-import cats.syntax.all.*
 import cats.effect.Resource
-import cats.data.{EitherT, NonEmptyList, NonEmptySet}
+import cats.data.{EitherT, NonEmptyList, NonEmptySet, ReaderT}
 import com.tcooling.wordle.util.Syntax.evalTap
 import com.tcooling.wordle.model.WordleConfig
 import com.tcooling.wordle.model.{WordLength, WordsParserError}
@@ -45,29 +44,37 @@ object WordsParser {
       }
     }
 
-  // TODO: use reader t
-  def observed[F[_] : Monad : Console](config: WordleConfig, delegate: WordsParser[F]): WordsParser[F] =
-    new WordsParser[F] {
+  def observed[F[_] : Monad : Console](
+      delegate: WordsParser[F]
+  ): ReaderT[F, WordleConfig, WordsParser[F]] =
+    ReaderT { config =>
+      new WordsParser[F] {
 
-      import config.{filename, wordLength}
+        import config.{filename, wordLength}
 
-      override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] =
-        delegate.parseWords().evalTap {
-          case Left(FileParseError) => Console[F].errorln("Error parsing words file.")
-          case Left(InvalidWordsError) =>
-            Console[F].errorln("Error parsing words (possibly word length or special characters).")
-          case Left(EmptyFileError) => Console[F].errorln("Empty words file error")
-          case Right(allWords) =>
-            Console[F].println(
-              s"Successfully parsed ${filename}, read ${allWords.length} words of length ${wordLength.value}")
-        }
+        override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] =
+          delegate.parseWords().evalTap {
+            case Left(FileParseError) => Console[F].errorln("Error parsing words file.")
+            case Left(InvalidWordsError) =>
+              Console[F].errorln("Error parsing words (possibly word length or special characters).")
+            case Left(EmptyFileError) => Console[F].errorln("Empty words file error")
+            case Right(allWords) =>
+              Console[F].println(
+                s"Successfully parsed ${filename}, read ${allWords.length} words of length ${wordLength.value}")
+          }
+      }.pure
     }
 
   def live[F[_] : Applicative : MonadCancelThrow : Parallel : Console](
-      config: WordleConfig,
       fileReader: FileReader[F]
-  ): WordsParser[F] = {
-    val delegate = WordsParser.apply(config, fileReader)
-    observed[F](config, delegate)
-  }
+  ): ReaderT[F, WordleConfig, WordsParser[F]] =
+    for {
+      config <- ReaderT((config: WordleConfig) => config.pure)
+      delegate <- {
+        val aaa = WordsParser
+          .observed(delegate = WordsParser[F].apply(config, fileReader))
+          .local[WordleConfig](identity)
+        aaa
+      } // TODO: surely this is pointless?
+    } yield delegate
 }
