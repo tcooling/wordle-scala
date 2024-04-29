@@ -16,10 +16,10 @@ object UserInputParser {
       wordLength: WordLength.Type
   ): Either[UserInputError, UserInputGuess.Type] =
     for {
-      _     <- (userInput.value.length == wordLength.value).toEither(IncorrectLength(wordLength.value), userInput)
-      guess <- WordRegex.validate(userInput.value).toEither(NonLetterCharacter, userInput)
+      _     <- Either.cond(userInput.value.length == wordLength.value, userInput, IncorrectLength(wordLength.value))
+      guess <- Either.cond(WordRegex.validate(userInput.value), userInput, NonLetterCharacter)
       upperCaseGuess = UserInputGuess(guess.value.toUpperCase)
-      validGuess <- allWords.contains(upperCaseGuess.value).toEither(WordDoesNotExist, upperCaseGuess)
+      validGuess <- Either.cond(allWords.contains(upperCaseGuess.value), upperCaseGuess, WordDoesNotExist)
     } yield validGuess
 
 }

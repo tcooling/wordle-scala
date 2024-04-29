@@ -11,8 +11,4 @@ object Syntax {
     }
   }
 
-  extension [L, R](predicate: Boolean) {
-    def toEither(left: L, right: R): Either[L, R] = if (predicate) Right(right) else Left(left)
-  }
-
 }
