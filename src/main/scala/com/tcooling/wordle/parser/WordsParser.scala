@@ -22,6 +22,7 @@ object WordsParser {
       override def parseWords(): F[Either[WordsParserError, NonEmptySet[String]]] = {
         // TODO: performance test if parTraverse is faster than not here
         val fileReaderR: Resource[F, List[String]] = fileReader.getLines(config.filename)
+
         for {
           lines         <- EitherT(fileReaderR.use(_.pure).attempt.map(_.leftMap(_ => FileParseError)))
           nonEmptyLines <- EitherT.fromEither(NonEmptyList.fromList(lines).map(_.toNes).toRight(EmptyFileError))
@@ -57,7 +58,7 @@ object WordsParser {
           case Left(EmptyFileError) => Console[F].errorln("Empty words file error")
           case Right(allWords) =>
             Console[F].println(
-              s"Successfully parsed ${filename}, read ${allWords.length} words of length ${wordLength.value}")
+              s"Successfully parsed $filename, read ${allWords.length} words of length ${wordLength.value}")
         }
     }
 

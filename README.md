@@ -41,6 +41,8 @@ Which runs `scalafix` and `scalafmt` before running all the tests.
 
 ## TODO
 - look into Cats effect
+- use pureconfig to read config
+- can you use the same word twice?
 
 ## License
 

@@ -37,6 +37,7 @@ object WordleFSM {
       guessConnector: GuessInputConnector[F]
   ): WordleFSM[F] = new WordleFSM[F] {
 
+    // TODO: try putting allwords and target word in apply method?
     override def nextState(allWords: NonEmptySet[String],
                            targetWord: TargetWord.Type)(state: FSM, guesses: List[WordGuess]): F[State] = state match {
       case Start             => (PrintHelp -> Nil).pure

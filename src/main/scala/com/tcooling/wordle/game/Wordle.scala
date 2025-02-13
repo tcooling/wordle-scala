@@ -29,10 +29,10 @@ object Wordle {
       wordsParser.parseWords().flatMap {
         case Left(_) => ExitCode.Error.pure
         case Right(words) =>
-          randomWord
-            .chooseRandomWord(words)
-            .flatMap(gameLoop(words, _))
-            .as(ExitCode.Success)
+          for {
+            targetWord <- randomWord.chooseRandomWord(words)
+            _          <- gameLoop(words, targetWord)
+          } yield ExitCode.Success
       }
 
     // TODO: handle ctrl + c from inside loop, currently program does not exit elegantly

@@ -1,7 +1,6 @@
 package com.tcooling.wordle.parser
 
 import cats.data.NonEmptySet
-import com.tcooling.wordle.util.Syntax.toEither
 import com.tcooling.wordle.model.{UserInputError, UserInputGuess, WordLength}
 import com.tcooling.wordle.model.UserInputError.{IncorrectLength, NonLetterCharacter, WordDoesNotExist}
 
